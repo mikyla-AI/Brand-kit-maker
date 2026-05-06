@@ -1,0 +1,3687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Brand Doc — Interactive Brand Specialist Form · TAI Portfolio</title>
+
+<!-- PDF parsing -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<!-- DOCX parsing -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<style>
+  :root {
+    --navy: #234572;
+    --rich-blue: #3700be;
+    --mint: #83c88b;
+    --turq: #6dbec4;
+    --tan: #a97f4b;
+    --pink: #ffcccc;
+    --ink: #1a1a1a;
+    --grey-50: #fafafa;
+    --grey-100: #f4f4f4;
+    --grey-200: #e5e5e5;
+    --grey-300: #d4d4d4;
+    --grey-500: #6b6b6b;
+    --reject: #b00020;
+    --keep: #2d6a2d;
+    --do-bg: #eaf5ea;
+    --dont-bg: #fbeaea;
+    --fill-bg: #fff8e1;
+    --llm-bg: #1e1e2e;
+    --warning-bg: #fff4e5;
+    --warning-border: #ed8a19;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    background: var(--grey-50);
+    color: var(--ink);
+    margin: 0;
+    line-height: 1.55;
+    font-size: 15px;
+  }
+
+  /* ============ STICKY HEADER ============ */
+  .header {
+    position: sticky;
+    top: 0;
+    background: white;
+    border-bottom: 2px solid var(--navy);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    z-index: 100;
+    padding: 16px 32px;
+  }
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .logo {
+    font-family: Georgia, serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--navy);
+    letter-spacing: -0.01em;
+  }
+  .logo-sub {
+    font-size: 11px;
+    color: var(--tan);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .brand-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+  }
+  .brand-selector label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--grey-500);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .brand-selector select {
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 2px solid var(--navy);
+    border-radius: 6px;
+    background: white;
+    color: var(--navy);
+    cursor: pointer;
+    min-width: 280px;
+  }
+  .header-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .btn {
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+  }
+  .btn-primary { background: var(--navy); color: white; }
+  .btn-primary:hover { background: var(--rich-blue); }
+  .btn-secondary { background: white; color: var(--navy); border: 1.5px solid var(--navy); }
+  .btn-secondary:hover { background: var(--navy); color: white; }
+  .btn-tan { background: var(--tan); color: white; }
+  .btn-tan:hover { background: #8a6537; }
+  .btn-ghost { background: transparent; color: var(--grey-500); }
+  .btn-ghost:hover { color: var(--navy); }
+
+  /* ============ PROGRESS BAR ============ */
+  .progress-strip {
+    background: var(--grey-100);
+    padding: 8px 32px;
+    border-bottom: 1px solid var(--grey-200);
+    font-size: 12px;
+    color: var(--grey-500);
+  }
+  .progress-strip-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .progress-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--grey-200);
+    border-radius: 4px;
+    overflow: hidden;
+    min-width: 200px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--mint), var(--turq));
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+  .progress-text {
+    font-weight: 700;
+    color: var(--navy);
+    white-space: nowrap;
+  }
+  .save-status {
+    color: var(--keep);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .save-status.saving { color: var(--tan); }
+
+  /* ============ MAIN LAYOUT ============ */
+  .layout {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 0;
+    padding: 24px 32px;
+  }
+  .sidebar {
+    position: sticky;
+    top: 140px;
+    align-self: start;
+    height: calc(100vh - 160px);
+    overflow-y: auto;
+    padding-right: 16px;
+    border-right: 1px solid var(--grey-200);
+  }
+  .sidebar-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--tan);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--grey-200);
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: var(--ink);
+    text-decoration: none;
+    border-radius: 5px;
+    margin-bottom: 2px;
+    cursor: pointer;
+    line-height: 1.3;
+  }
+  .nav-item:hover { background: var(--grey-100); }
+  .nav-item.active { background: var(--navy); color: white; font-weight: 600; }
+  .nav-item.active .nav-status { color: white; }
+  .nav-status {
+    font-size: 11px;
+    color: var(--grey-500);
+    font-weight: 700;
+    margin-left: 8px;
+  }
+  .nav-status.complete { color: var(--keep); }
+  .nav-status.partial { color: var(--tan); }
+
+  .content {
+    padding-left: 32px;
+  }
+
+  /* ============ UPLOAD WIDGET ============ */
+  .upload-widget {
+    background: linear-gradient(135deg, #2d3e62 0%, #234572 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 28px 32px;
+    margin-bottom: 28px;
+    box-shadow: 0 4px 16px rgba(35, 69, 114, 0.2);
+  }
+  .upload-widget h2 {
+    color: white;
+    font-family: Georgia, serif;
+    margin: 0 0 6px 0;
+    font-size: 24px;
+  }
+  .upload-widget .uw-sub {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 14px;
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+  .upload-dropzone {
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px dashed rgba(255, 255, 255, 0.4);
+    border-radius: 8px;
+    padding: 28px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .upload-dropzone:hover, .upload-dropzone.dragging {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.7);
+  }
+  .upload-dropzone .uw-cta {
+    color: white;
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  .upload-dropzone .uw-formats {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+  }
+  .upload-status {
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+    display: none;
+  }
+  .upload-status.active { display: block; }
+  .upload-status.error { background: rgba(176, 0, 32, 0.2); border-left: 3px solid #ff8080; }
+  .upload-status.success { background: rgba(45, 106, 45, 0.25); border-left: 3px solid var(--mint); }
+  .upload-progress {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .upload-progress-fill {
+    height: 100%;
+    background: var(--mint);
+    width: 0%;
+    transition: width 0.3s;
+  }
+  .uw-results {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-top: 14px;
+    font-size: 13px;
+    display: none;
+  }
+  .uw-results.active { display: block; }
+  .uw-results h4 {
+    color: white;
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+  }
+  .uw-results ul { margin: 4px 0; padding-left: 20px; }
+  .uw-results li { margin-bottom: 3px; color: rgba(255, 255, 255, 0.9); }
+  .uw-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  /* ============ REVIEW BADGE ============ */
+  .review-badge {
+    display: inline-block;
+    background: var(--warning-bg);
+    color: var(--warning-border);
+    border: 1.5px solid var(--warning-border);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-left: 6px;
+  }
+  .review-badge.approved { background: var(--do-bg); color: var(--keep); border-color: var(--keep); }
+  .review-badge.approved::before { content: "✓ "; }
+  .review-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .review-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    border: 1.5px solid;
+    border-radius: 4px;
+    cursor: pointer;
+    background: white;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .review-btn.approve { color: var(--keep); border-color: var(--keep); }
+  .review-btn.approve:hover { background: var(--keep); color: white; }
+  .review-btn.edit { color: var(--rich-blue); border-color: var(--rich-blue); }
+  .review-btn.edit:hover { background: var(--rich-blue); color: white; }
+  .field-review-wrap.needs-review {
+    border-left: 3px solid var(--warning-border);
+    padding-left: 12px;
+    margin-left: -15px;
+  }
+  .field-review-wrap.approved {
+    border-left: 3px solid var(--keep);
+    padding-left: 12px;
+    margin-left: -15px;
+  }
+
+  /* ============ DRIVE FOLDER FIELD ============ */
+  .drive-folder-card {
+    background: white;
+    border: 2px solid var(--turq);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .drive-folder-card .df-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    background: var(--turq);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 22px;
+    font-weight: 700;
+    font-family: Georgia, serif;
+  }
+  .drive-folder-card .df-content { flex: 1; min-width: 240px; }
+  .drive-folder-card .df-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--turq);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .drive-folder-card .df-help { font-size: 12px; color: var(--grey-500); margin-top: 4px; }
+  .drive-folder-card input { margin-top: 6px; }
+  .drive-folder-card .df-open {
+    background: var(--turq);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .drive-folder-card .df-open:hover { background: #4ea4ab; }
+  .drive-folder-card .df-open.disabled { background: var(--grey-300); cursor: not-allowed; pointer-events: none; }
+
+  /* ============ VISUAL DESIGN BLOCK (per copy type) ============ */
+  .visual-design-block {
+    margin-top: 22px;
+    padding: 18px 20px;
+    background: #f4f8fb;
+    border-radius: 6px;
+    border: 1px solid #d4e3f0;
+  }
+  .visual-design-block .vdb-header {
+    color: var(--rich-blue);
+    margin: 0 0 4px 0;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+  }
+  .visual-design-block .vdb-help {
+    font-size: 12px;
+    color: var(--grey-500);
+    margin: 0 0 14px 0;
+    line-height: 1.5;
+  }
+  .vdb-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+  .vdb-row input { flex: 1; min-width: 220px; }
+  .vdb-btn-analyze {
+    background: var(--rich-blue);
+    color: white;
+    border: none;
+    padding: 0 14px;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .vdb-btn-analyze:hover { background: #2a008f; }
+  .vdb-btn-open {
+    background: var(--turq);
+    color: white;
+    border: none;
+    padding: 0 14px;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+  .vdb-btn-open:hover { background: #4ea4ab; }
+  .vdb-btn-open.disabled { background: var(--grey-300); pointer-events: none; cursor: not-allowed; }
+
+  /* Modal — analysis prompt */
+  .prompt-modal-content {
+    max-width: 720px !important;
+    width: 92% !important;
+  }
+  .prompt-textarea {
+    width: 100%;
+    min-height: 380px;
+    padding: 14px;
+    font-family: "SF Mono", Menlo, Monaco, "Courier New", monospace;
+    font-size: 12px;
+    line-height: 1.55;
+    border: 1.5px solid var(--grey-300);
+    border-radius: 6px;
+    background: var(--grey-50);
+    resize: vertical;
+  }
+  .prompt-instructions {
+    background: #ede7f6;
+    border-left: 3px solid var(--rich-blue);
+    padding: 12px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  /* ============ BRAND CONTEXT BLOCK ============ */
+  .brand-context {
+    background: linear-gradient(135deg, #fff 0%, #fff8e1 100%);
+    border: 2px solid var(--tan);
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin-bottom: 28px;
+  }
+  .brand-context h2 {
+    font-family: Georgia, serif;
+    color: var(--navy);
+    margin: 0 0 4px 0;
+    font-size: 22px;
+  }
+  .brand-context .ctx-sub {
+    color: var(--grey-500);
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  .brand-context .ctx-help {
+    background: white;
+    border-left: 3px solid var(--tan);
+    padding: 10px 14px;
+    font-size: 13px;
+    margin-top: 12px;
+    color: var(--ink);
+  }
+
+  /* ============ SUGGESTION CHIPS ============ */
+  .suggestion-bank {
+    margin-top: 8px;
+    padding: 12px 14px;
+    background: #f4f8fb;
+    border: 1px solid #d4e3f0;
+    border-radius: 6px;
+  }
+  .suggestion-bank-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--rich-blue);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .suggestion-bank-label .ctx-mode {
+    font-size: 10px;
+    color: var(--grey-500);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: none;
+  }
+  .suggestion-chip {
+    display: inline-block;
+    background: white;
+    color: var(--navy);
+    border: 1.5px solid #d4e3f0;
+    padding: 5px 11px;
+    margin: 3px 4px 3px 0;
+    border-radius: 14px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    line-height: 1.3;
+    font-family: inherit;
+  }
+  .suggestion-chip:hover {
+    background: var(--navy);
+    color: white;
+    border-color: var(--navy);
+  }
+  .suggestion-chip.added {
+    background: var(--mint);
+    color: white;
+    border-color: var(--mint);
+  }
+  .suggestion-chip.added::before {
+    content: "✓ ";
+  }
+  .intro-panel {
+    background: white;
+    border: 2px solid var(--navy);
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin-bottom: 32px;
+  }
+  .intro-panel h1 {
+    font-family: Georgia, serif;
+    color: var(--navy);
+    margin: 0 0 8px 0;
+    font-size: 28px;
+  }
+  .intro-panel .subtitle {
+    color: var(--grey-500);
+    margin-bottom: 16px;
+    font-size: 15px;
+  }
+  .intro-panel p { font-size: 14px; margin: 8px 0; }
+  .intro-list {
+    background: var(--grey-100);
+    padding: 14px 18px 14px 36px;
+    border-radius: 6px;
+    margin-top: 12px;
+    font-size: 14px;
+  }
+  .intro-list li { margin-bottom: 6px; }
+  .intro-list strong { color: var(--navy); }
+
+  /* ============ SECTIONS ============ */
+  .section {
+    background: white;
+    border-radius: 8px;
+    padding: 28px 32px;
+    margin-bottom: 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border: 1px solid var(--grey-200);
+    scroll-margin-top: 160px;
+  }
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--grey-100);
+  }
+  .section-num {
+    font-family: "SF Mono", Menlo, Monaco, monospace;
+    font-size: 12px;
+    color: var(--tan);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+  .section-title {
+    font-family: Georgia, serif;
+    font-size: 24px;
+    color: var(--navy);
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+  }
+  .section-help {
+    font-size: 13px;
+    color: var(--grey-500);
+    margin: 6px 0 16px 0;
+  }
+  .section-progress {
+    font-size: 11px;
+    color: var(--grey-500);
+    background: var(--grey-100);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .section-progress.complete { background: var(--do-bg); color: var(--keep); }
+
+  h3.subsection {
+    font-size: 16px;
+    color: var(--rich-blue);
+    margin: 24px 0 8px 0;
+    font-weight: 700;
+  }
+  h4.field-group {
+    font-size: 12px;
+    color: var(--tan);
+    margin: 18px 0 8px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+  }
+
+  /* ============ FORM FIELDS ============ */
+  .field {
+    margin-bottom: 18px;
+  }
+  .field-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .field-hint {
+    font-size: 12px;
+    color: var(--grey-500);
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+  .field-required::after {
+    content: " *";
+    color: var(--reject);
+  }
+  textarea, input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    border: 1.5px solid var(--grey-300);
+    border-radius: 5px;
+    background: white;
+    line-height: 1.5;
+    transition: border-color 0.15s ease;
+    resize: vertical;
+  }
+  textarea:focus, input[type="text"]:focus {
+    outline: none;
+    border-color: var(--navy);
+    box-shadow: 0 0 0 3px rgba(35, 69, 114, 0.1);
+  }
+  textarea { min-height: 70px; }
+  textarea.short { min-height: 50px; }
+  textarea.long { min-height: 120px; }
+  textarea.example { min-height: 100px; font-size: 14px; }
+
+  /* Inline two-column field layout */
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .field-row.three { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 720px) {
+    .field-row, .field-row.three { grid-template-columns: 1fr; }
+  }
+
+  /* ============ DO/DON'T PAIRS ============ */
+  .pair-block {
+    margin: 16px 0 24px 0;
+    border: 1px solid var(--grey-200);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .pair-block-header {
+    background: var(--grey-100);
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--navy);
+    border-bottom: 1px solid var(--grey-200);
+  }
+  .pair-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  @media (max-width: 720px) {
+    .pair-grid { grid-template-columns: 1fr; }
+  }
+  .pair-cell {
+    padding: 14px 16px;
+  }
+  .pair-cell.dont {
+    background: var(--dont-bg);
+    border-right: 1px solid var(--grey-200);
+  }
+  .pair-cell.do {
+    background: var(--do-bg);
+  }
+  @media (max-width: 720px) {
+    .pair-cell.dont { border-right: none; border-bottom: 1px solid var(--grey-200); }
+  }
+  .pair-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-bottom: 6px;
+  }
+  .pair-tag.dont { background: var(--reject); color: white; }
+  .pair-tag.do { background: var(--keep); color: white; }
+  .pair-cell textarea {
+    background: white;
+    border-color: var(--grey-300);
+    font-size: 13px;
+    min-height: 70px;
+  }
+
+  /* ============ EXAMPLE GROUPS ============ */
+  .example-group {
+    background: var(--grey-50);
+    border: 1px solid var(--grey-200);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .example-group-header {
+    background: white;
+    padding: 12px 18px;
+    font-weight: 700;
+    color: var(--navy);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--grey-200);
+    user-select: none;
+  }
+  .example-group-header:hover { background: var(--grey-100); }
+  .example-group-title { font-size: 15px; }
+  .example-group-meta {
+    font-size: 11px;
+    color: var(--grey-500);
+    font-weight: 600;
+  }
+  .example-group-body {
+    padding: 18px 20px;
+    display: none;
+  }
+  .example-group.open .example-group-body { display: block; }
+  .example-group .toggle-icon {
+    color: var(--tan);
+    font-size: 14px;
+    margin-left: 10px;
+    transition: transform 0.2s;
+  }
+  .example-group.open .toggle-icon { transform: rotate(90deg); }
+
+  /* ============ CALLOUTS ============ */
+  .callout {
+    padding: 14px 18px;
+    margin: 14px 0;
+    border-radius: 5px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .callout.tip { background: #eef5fb; border-left: 4px solid var(--rich-blue); }
+  .callout.warning { background: var(--warning-bg); border-left: 4px solid var(--warning-border); }
+  .callout-label {
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+  .callout.tip .callout-label { color: var(--rich-blue); }
+  .callout.warning .callout-label { color: var(--warning-border); }
+
+  /* ============ TONE SLIDERS ============ */
+  .tone-slider {
+    margin-bottom: 14px;
+  }
+  .tone-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .tone-labels .left { color: var(--grey-500); }
+  .tone-labels .right { color: var(--grey-500); }
+  .tone-track {
+    position: relative;
+    height: 6px;
+    background: var(--grey-200);
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .tone-track-bg {
+    position: absolute;
+    inset: 0;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--turq) 0%, var(--mint) 50%, var(--tan) 100%);
+    opacity: 0.3;
+  }
+  .tone-thumb {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    background: white;
+    border: 3px solid var(--navy);
+    border-radius: 50%;
+    cursor: grab;
+    z-index: 2;
+  }
+  .tone-thumb:active { cursor: grabbing; }
+  input[type="range"].tone-input {
+    width: 100%;
+    margin-top: -2px;
+  }
+
+  /* ============ DYNAMIC LIST (add/remove rows) ============ */
+  .dynamic-list { margin-top: 8px; }
+  .dynamic-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: flex-start;
+  }
+  .dynamic-row textarea {
+    flex: 1;
+  }
+  .dynamic-row-remove {
+    background: white;
+    border: 1.5px solid var(--grey-300);
+    color: var(--reject);
+    width: 32px;
+    height: 38px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .dynamic-row-remove:hover { background: var(--dont-bg); border-color: var(--reject); }
+  .add-row-btn {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--rich-blue);
+    background: transparent;
+    border: 1.5px dashed var(--grey-300);
+    padding: 8px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .add-row-btn:hover { border-color: var(--rich-blue); background: #eef5fb; }
+
+  /* ============ BANNED-WORD CHIPS (preview) ============ */
+  .universal-banned {
+    background: var(--dont-bg);
+    border: 1px solid #f0c5c5;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    font-size: 13px;
+  }
+  .universal-banned-label {
+    font-weight: 700;
+    color: var(--reject);
+    margin-bottom: 6px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .chip {
+    display: inline-block;
+    background: white;
+    color: var(--reject);
+    border: 1px solid #f0c5c5;
+    padding: 2px 10px;
+    margin: 2px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* ============ BRAND TAG ============ */
+  .brand-tag {
+    display: inline-block;
+    background: var(--navy);
+    color: white;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    border-radius: 3px;
+  }
+
+  /* ============ MODAL ============ */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 12px;
+    padding: 28px;
+    max-width: 540px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .modal h2 {
+    font-family: Georgia, serif;
+    color: var(--navy);
+    margin-top: 0;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+
+  /* Hidden file input */
+  input[type="file"] { display: none; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 32px;
+    color: var(--grey-500);
+    font-size: 12px;
+  }
+
+  @media (max-width: 880px) {
+    .layout { grid-template-columns: 1fr; padding: 16px; }
+    .sidebar { display: none; }
+    .content { padding-left: 0; }
+    .header { padding: 12px 16px; }
+    .brand-selector select { min-width: 200px; }
+    .progress-strip { padding: 6px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ STICKY HEADER ============ -->
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <div class="logo">The Brand Doc</div>
+      <div class="logo-sub">Brand Specialist Form · TAI Portfolio</div>
+    </div>
+    <div class="brand-selector">
+      <label for="brandSelect">Brand:</label>
+      <select id="brandSelect" onchange="switchBrand(this.value)">
+        <option value="TAI">The Ayurvedic Institute (TAI)</option>
+        <option value="AyurPranaPlus">AyurPrana+</option>
+        <option value="DrLad">Dr. Vasant Lad (Personal Account)</option>
+        <option value="SoHum">SoHum</option>
+        <option value="AYC">AYC (AyurPrana Transform)</option>
+      </select>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">Import</button>
+      <input type="file" id="importFile" accept=".json" onchange="importJson(event)">
+      <button class="btn btn-secondary" onclick="exportJson()">Export JSON</button>
+      <button class="btn btn-tan" onclick="exportMarkdown()">Export Brand Doc .md</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PROGRESS STRIP ============ -->
+<div class="progress-strip">
+  <div class="progress-strip-inner">
+    <span class="progress-text" id="progressText">0% complete</span>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="save-status" id="saveStatus">Auto-saved</span>
+    <button class="btn-ghost btn" onclick="clearCurrentBrand()" style="font-size: 11px;">Clear this brand</button>
+  </div>
+</div>
+
+<!-- ============ LAYOUT ============ -->
+<div class="layout">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-title">Sections (<span id="brandLabelSidebar">TAI</span>)</div>
+    <a class="nav-item" onclick="scrollToSection('intro', event)">Intro</a>
+    <a class="nav-item" onclick="scrollToSection('s1', event)">1. Brand Identity <span class="nav-status" id="ns1">0/4</span></a>
+    <a class="nav-item" onclick="scrollToSection('s2', event)">2. Ideal Customer <span class="nav-status" id="ns2">0/9</span></a>
+    <a class="nav-item" onclick="scrollToSection('s3', event)">3. Personas <span class="nav-status" id="ns3">0/3</span></a>
+    <a class="nav-item" onclick="scrollToSection('s4', event)">4. Voice Fingerprint <span class="nav-status" id="ns4">0/3</span></a>
+    <a class="nav-item" onclick="scrollToSection('s5', event)">5. Banned + Required <span class="nav-status" id="ns5">0/4</span></a>
+    <a class="nav-item" onclick="scrollToSection('s6', event)">6. POV + Tone <span class="nav-status" id="ns6">0/2</span></a>
+    <a class="nav-item" onclick="scrollToSection('s7', event)">7. Worked Examples <span class="nav-status" id="ns7">0/15</span></a>
+    <a class="nav-item" onclick="scrollToSection('s8', event)">8. CTA Library <span class="nav-status" id="ns8">0/5</span></a>
+    <a class="nav-item" onclick="scrollToSection('s9', event)">9. Edge Cases <span class="nav-status" id="ns9">0/2</span></a>
+    <a class="nav-item" onclick="scrollToSection('s10', event)">10. Review Checklist <span class="nav-status" id="ns10">0/1</span></a>
+  </aside>
+
+  <!-- ============ CONTENT ============ -->
+  <main class="content">
+
+    <!-- UPLOAD WIDGET -->
+    <div class="upload-widget">
+      <h2>Upload what you have</h2>
+      <div class="uw-sub">If this brand already has a brand voice doc, style guide, or messaging framework — upload it here. The form will parse it and pre-populate the fields below. You'll review each parsed field with an Approve or Edit button before it's locked. Anything not parseable stays empty for you to fill in directly.</div>
+
+      <div class="upload-dropzone" id="uploadDropzone">
+        <div class="uw-cta">Drop a file here or click to browse</div>
+        <div class="uw-formats">Supports: PDF · DOCX · MD · TXT · max 10MB</div>
+        <input type="file" id="uploadFile" accept=".pdf,.docx,.md,.txt" style="display:none;">
+      </div>
+
+      <div class="upload-status" id="uploadStatus">
+        <div id="uploadStatusText">Processing...</div>
+        <div class="upload-progress"><div class="upload-progress-fill" id="uploadProgress"></div></div>
+      </div>
+
+      <div class="uw-results" id="uploadResults"></div>
+    </div>
+
+    <!-- BRAND CONTEXT BLOCK (slim) -->
+    <div class="brand-context">
+      <h2>Brand basics</h2>
+
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label" for="ctx_website">Website URL</label>
+          <input type="text" id="ctx_website" data-track="ctx" placeholder="https://...">
+        </div>
+        <div class="field">
+          <label class="field-label" for="ctx_handles">Primary social handles</label>
+          <input type="text" id="ctx_handles" data-track="ctx" placeholder="@theayurvedicinstitute, @ayurpranaplus, ...">
+        </div>
+      </div>
+    </div>
+
+    <!-- DRIVE FOLDER CARD -->
+    <div class="drive-folder-card">
+      <div class="df-icon">📁</div>
+      <div class="df-content">
+        <div class="df-label">Visual assets · Google Drive</div>
+        <div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-top: 2px;">Brand visuals folder</div>
+        <input type="text" id="ctx_drive_folder" data-track="ctx" placeholder="Paste Google Drive folder URL for this brand's visuals">
+        <div class="df-help">Upload logos, color palette images, typography samples, and example post screenshots directly to the brand's Drive folder. The form stores the URL only — not the files.</div>
+      </div>
+      <a id="ctx_drive_open" href="#" class="df-open disabled" target="_blank" rel="noopener">Open folder</a>
+    </div>
+
+    <!-- INTRO -->
+    <div id="intro" class="intro-panel">
+      <h1>Welcome — fill in <span class="brand-label">The Ayurvedic Institute (TAI)</span></h1>
+      <div class="subtitle">This form generates the brand chapter that Claude (and the rest of the team) uses to produce on-brand copy for every campaign.</div>
+      <p>This form is built on top of the Universal Rules already locked into the master Brand Doc. You don't need to re-document banned words, contrast constructions, or Dr. Lad accuracy rules — those apply to every brand automatically. Your job is to fill in what makes this brand specifically itself.</p>
+      <ol class="intro-list">
+        <li><strong>Switch brand</strong> in the dropdown at the top to fill in any of the five accounts. Each brand's data is saved separately in your browser.</li>
+        <li><strong>Auto-save</strong> runs on every change. If you switch laptops, hit "Export JSON" and re-import on the new device to continue.</li>
+        <li><strong>Required fields</strong> are marked with a red asterisk. Optional fields can be left blank if not relevant.</li>
+        <li><strong>When done</strong>, hit "Export Brand Chapter" at the top to generate a populated markdown file ready to drop into the master Brand Doc.</li>
+        <li><strong>One sitting</strong> takes about 90–120 minutes per brand if you have answers ready. The Worked Examples section is the heaviest lift — set aside time.</li>
+      </ol>
+      <div class="callout tip">
+        <div class="callout-label">Why this form is structured this way</div>
+        Large language models like Claude work best with example-based reasoning, not abstract voice descriptions. Every section asks for concrete examples, ideally with a Do/Don't pair. The harder you push on specificity here, the better the output the team gets when generating copy down the line.
+      </div>
+    </div>
+
+    <!-- ============ SECTION 1 — BRAND IDENTITY ============ -->
+    <section id="s1" class="section" data-section="1">
+      <div class="section-header">
+        <div>
+          <div class="section-num">SECTION 1</div>
+          <h2 class="section-title">Brand Identity</h2>
+        </div>
+        <span class="section-progress" id="sp1">0/4</span>
+      </div>
+      <p class="section-help">The five-line identity card. This is what every team member should be able to recite in their sleep about this brand.</p>
+
+      <h3 class="subsection">Document maintenance</h3>
+      <div class="callout tip">
+        <div class="callout-label">Why this is here</div>
+        Brand docs decay without owners and version history. Filling this once prevents "wait, which version is the latest?" six months from now.
+      </div>
+      <div class="field-row three">
+        <div class="field">
+          <label class="field-label" for="f_doc_version">Version</label>
+          <input type="text" id="f_doc_version" data-track="1" placeholder="e.g. 1.0">
+        </div>
+        <div class="field">
+          <label class="field-label" for="f_doc_date">Date</label>
+          <input type="text" id="f_doc_date" data-track="1" placeholder="e.g. April 21, 2026">
+        </div>
+        <div class="field">
+          <label class="field-label" for="f_doc_status">Status</label>
+          <input type="text" id="f_doc_status" data-track="1" placeholder="e.g. Living document">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label" for="f_doc_author">Author</label>
+          <input type="text" id="f_doc_author" data-track="1" placeholder="Who wrote this version">
+        </div>
+        <div class="field">
+          <label class="field-label" for="f_doc_owner">Owner</label>
+          <input type="text" id="f_doc_owner" data-track="1" placeholder="Who maintains and approves changes going forward">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f_update_criteria">Update criteria — when should this doc be revised?</label>
+        <div class="field-hint">List the triggers that warrant an update. Example: a new platform is added, a campaign meaningfully outperforms, voice drift is identified, the brand's positioning shifts.</div>
+        <textarea id="f_update_criteria" data-track="1"></textarea>
+      </div>
+
+      <h3 class="subsection">Brand identity</h3>
+
+      <div class="field">
+        <label class="field-label field-required" for="f_positioning">One-line positioning statement</label>
+        <div class="field-hint">Max 15 words. The single sentence that captures what this brand IS. If a colleague asks "what's this brand?" — this is the answer.</div>
+        <textarea id="f_positioning" class="short" data-track="1" placeholder="Example: A 40-year-old Ayurvedic medical school led by Dr. Vasant Lad, training clinicians at every level."></textarea>
+      </div>
+
+      <div class="field">
+        <label class="field-label field-required" for="f_mission_northstar">Mission &amp; North Star (combined)</label>
+        <div class="field-hint">Two sentences max. Sentence 1 = the mission (why we exist). Sentence 2 = the north star (the single thing this brand is built to do day-to-day). For most brands these collapse into one paragraph.</div>
+        <textarea id="f_mission_northstar" data-track="1"></textarea>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label" for="f_tagline">Tagline (if any)</label>
+          <div class="field-hint">Optional. Leave blank if the brand doesn't use one.</div>
+          <input type="text" id="f_tagline" data-track="1">
+        </div>
+        <div class="field">
+          <label class="field-label field-required" for="f_founding_year">Founded</label>
+          <div class="field-hint">Year + one-sentence founding context.</div>
+          <input type="text" id="f_founding_year" data-track="1" placeholder="e.g. 1984 — founded by Dr. Vasant Lad in Albuquerque, NM">
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label field-required" for="f_founding_story">Founding story (3 sentences)</label>
+        <div class="field-hint">The version a team member could repeat to a journalist or new student. What was happening when this brand started? What problem did it solve? What's still true today?</div>
+        <textarea id="f_founding_story" class="long" data-track="1"></textarea>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 2 — ICP ============ -->
+    <section id="s2" class="section" data-section="2">
+      <div class="section-header">
+        <div>
+          <div class="section-num">SECTION 2</div>
+          <h2 class="section-title">Ideal Customer Profile</h2>
+        </div>
+        <span class="section-progress" id="sp2">0/9</span>
+      </div>
+      <p class="section-help">The single person this brand exists to serve. Specificity here drives every other section. Vague answers here produce vague copy everywhere else.</p>
+
+      <h3 class="subsection">Demographic snapshot</h3>
+      <div class="field-row three">
+        <div class="field">
+          <label class="field-label field-required" for="f_demo_age">Age range</label>
+          <input type="text" id="f_demo_age" data-track="2" placeholder="e.g. 30–60, concentrated 35–50">
+        </div>
+        <div class="field">
+          <label class="field-label" for="f_demo_gender">Gender split</label>
+          <input type="text" id="f_demo_gender" data-track="2" placeholder="e.g. 70% women, 30% men">
+        </div>
+        <div class="field">
+          <label class="field-label" for="f_demo_income">Income range</label>
+          <input type="text" id="f_demo_income" data-track="2" placeholder="e.g. $75k+ household">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label" for="f_demo_education">Education level</label>
+          <input type="text" id="f_demo_education" data-track="2">
+        </div>
+        <div class="field">
+          <label class="field-label" for="f_demo_geo">Geographic concentration</label>
+          <input type="text" id="f_demo_geo" data-track="2" placeholder="e.g. US-based, with strongest pockets in CA, NY, NM, NC">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label field-required" for="f_demo_occupation">Occupation patterns</label>
+        <div class="field-hint">Be specific — name the actual jobs. Not "wellness professionals" but "RNs, NDs, massage therapists, yoga teachers, integrative MDs."</div>
+        <textarea id="f_demo_occupation" data-track="2"></textarea>
+      </div>
+
+      <h3 class="subsection">Psychographic profile</h3>
+      <div class="field">
+        <label class="field-label field-required" for="f_psycho_beliefs">Core beliefs about wellness, healing, and their body</label>
+        <div class="field-hint">What does this person already believe about how the body works? What's their relationship to conventional medicine?</div>
+        <textarea id="f_psycho_beliefs" data-track="2"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f_psycho_tried">What they've already tried (and why it didn't fully work)</label>
+        <div class="field-hint">This is gold for hooks. Specific modalities they've already explored, and the gap that remains.</div>
+        <textarea id="f_psycho_tried" data-track="2"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f_psycho_consume">What they read, watch, listen to · who they trust</label>
+        <div class="field-hint">Names, podcasts, authors, social accounts. Helps us understand the existing voice landscape they live in.</div>
+        <textarea id="f_psycho_consume" data-track="2"></textarea>
+      </div>
+
+      <h3 class="subsection">Pain points, desires, aspirations, objections</h3>
+      <div class="callout tip">
+        <div class="callout-label">In their words, not yours</div>
+        Use the exact phrasing this person uses when they describe these to themselves. Not your translation. The closer to their actual language, the better the LLM can write hooks that resonate.
+      </div>
+
+      <div class="field">
+        <label class="field-label field-required">Pain points (3–5, in their voice)</label>
+        <div class="suggestion-bank" data-suggest="pain"></div>
+        <div class="dynamic-list" id="painList" data-track-list="2"></div>
+        <button class="add-row-btn" data-add="painList" data-prefix="pain">+ Add pain point</button>
+      </div>
+
+      <div class="field">
+        <label class="field-label field-required">Desires (3–5, in their voice)</label>
+        <div class="suggestion-bank" data-suggest="desire"></div>
+        <div class="dynamic-list" id="desireList" data-track-list="2"></div>
+        <button class="add-row-btn" data-add="desireList" data-prefix="desire">+ Add desire</button>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Long-term aspirations (3–5)</label>
+        <div class="suggestion-bank" data-suggest="aspiration"></div>
+        <div class="dynamic-list" id="aspirationList" data-track-list="2"></div>
+        <button class="add-row-btn" data-add="aspirationList" data-prefix="aspiration">+ Add aspiration</button>
+      </div>
+
+      <div class="field">
+        <label class="field-label field-required">Objections — what stops them from buying / signing up</label>
+        <div class="field-hint">The actual hesitations. "It's too expensive" / "I don't have time" / "I'm not ready to leave my job."</div>
+        <div class="suggestion-bank" data-suggest="objection"></div>
+        <div class="dynamic-list" id="objectionList" data-track-list="2"></div>
+        <button class="add-row-btn" data-add="objectionList" data-prefix="objection">+ Add objection</button>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="f_decision_triggers">Decision triggers — what finally tips them into action</label>
+        <div class="field-hint">The thing that pushes "I'm thinking about it" into "I just enrolled." Often a life event, a frustration peak, or a specific moment of clarity.</div>
+        <textarea id="f_decision_triggers" data-track="2"></textarea>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 3 — PERSONAS ============ -->
+    <section id="s3" class="section" data-section="3">
+      <div class="section-header">
+        <div>
+          <div class="section-num">SECTION 3</div>
+          <h2 class="section-title">Audience Personas</h2>
+        </div>
+        <span class="section-progress" id="sp3">0/3</span>
+      </div>
+      <p class="section-help">Most brands have more than one buyer type. Add a separate persona for each. If this brand only really has one persona, leave the others blank.</p>
+
+      <div class="field">
+        <label class="field-label field-required" for="f_persona_1">Persona 1 — name, snapshot, distinguishing pain point</label>
+        <div class="field-hint">Give them a name. One paragraph. Format: "Persona Name (job/role). The thing that makes this person different from other personas."</div>
+        <textarea id="f_persona_1" class="long" data-track="3" placeholder='e.g. "Healthcare Crossover Sarah" — an ICU nurse with 12 years experience who is burned out on emergency-only care and looking for a framework to address the chronic patterns she sees in patients but can\'t treat in her current setting.'></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f_persona_2">Persona 2</label>
+        <textarea id="f_persona_2" class="long" data-track="3"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f_persona_3">Persona 3 (optional)</label>
+        <textarea id="f_persona_3" class="long" data-track="3"></textarea>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 4 — VOICE FINGERPRINT ============ -->
+    <section id="s4" class="section" data-section="4">
+      <div class="section-header">
+        <div>
+          <div class="section-num">SECTION 4</div>
+          <h2 class="section-title">Voice Fingerprint</h2>
+        </div>
+        <span class="section-progress" id="sp4">0/3</span>
+      </div>
+      <p class="section-help">How this brand sounds in three sentences. The fingerprint should be specific enough that a writer or LLM can recognize an off-brand sentence immediately.</p>
+
+      <div class="field">
+        <label class="field-label field-required" for="f_voice_three_sentences">Voice in three sentences</label>
+        <div class="field-hint">Sentence 1 = what we sound like. Sentence 2 = what makes us recognizable. Sentence 3 = what we sound like under pressure (when copy is hard to write).</div>
+        <textarea id="f_voice_three_sentences" class="long" data-track="4"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="f_voice_rhythm">Sentence rhythm specifics</label>
+        <div class="field-hint">Average sentence length? Paragraph length? Any structural quirks (e.g., often opens with context, often ends with a question, frequently uses semicolons)?</div>
+        <textarea id="f_voice_rhythm" data-track="4"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="field-label field-required" for="f_voice_negative_anchors">What this brand never sounds like</label>
+        <div class="field-hint">Name 2–3 brands or styles this brand should never be confused with. The negative anchor is more useful to LLMs than positive description.</div>
+        <textarea id="f_voice_negative_anchors" data-track="4" placeholder="e.g. Goop. Wellness coaches on Instagram. Generic medical-establishment copy."></textarea>
+      </div>
+
+      <h3 class="subsection">Tonal benchmarks — published pieces that calibrate the voice</h3>
+      <div class="callout tip">
+        <div class="callout-label">Most useful field for LLMs</div>
+        Pointing at specific published pieces is the highest-signal way to anchor voice. Claude (or any writer) can compare new copy directly against these exemplars.
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="f_benchmark_primary">Primary benchmark — the single piece that captures this brand at full strength</label>
+        <div class="field-hint">URL + brief notes on why it's the benchmark. Example: "Shayla DiTolla, 'The Lived Experience of a 200-Hour Yoga Teacher Training' — depth without over-explanation, intellectual clarity that still feels human."</div>
+        <textarea id="f_benchmark_primary" class="long" data-track="4"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="f_benchmark_passages">Specific passages worth studying</label>
+        <div class="field-hint">Short quoted passages from published work that demonstrate voice moves. Format: "[passage] — [what it does well]"</div>
+        <textarea id="f_benchmark_passages" class="long" data-track="4"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="f_benchmark_ecosystem">Ecosystem voice benchmarks (other brands' content worth modeling)</label>
+        <div class="field-hint">If this brand sits in a portfolio, name partner accounts whose voice elements should be reflected here. Example: AYC's doc points at @drvasantlad and @theayurvedicinstitute as ecosystem benchmarks.</div>
+        <textarea id="f_benchmark_ecosystem" class="long" data-track="4"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="f_benchmark_off_voice">A piece that needs revision — the gap between old and current standard</label>
+        <div class="field-hint">Most brands have at least one published piece that drifted from voice. Document it here as the contrastive example. Format: "[URL or title] — [what it does wrong] — [what a revision would do differently]"</div>
+        <textarea id="f_benchmark_off_voice" class="long" data-track="4"></textarea>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 5 — BANNED + REQUIRED ============ -->
+    <section id="s5" class="section" data-section="5">
+      <div class="section-header">
+        <div>
+          <div class="section-num">SECTION 5</div>
+          <h2 class="section-title">Banned &amp; Required Phrases</h2>
+        </div>
+        <span class="section-progress" id="sp5">0/4</span>
+      </div>
+      <p class="section-help">Phrases this brand never uses, and phrases this brand always anchors to. Same mental exercise, opposite directions.</p>
+
+      <div class="universal-banned">
+        <div class="universal-banned-label">Universal banned (already locked, no need to repeat)</div>
+        <span class="chip">powerful</span><span class="chip">delve</span><span class="chip">profound</span><span class="chip">whisper (adj.)</span><span class="chip">relic</span><span class="chip">post-mortem</span><span class="chip">"You are not broken"</span><span class="chip">contrast constructions</span><span class="chip">emojis</span>
+      </div>
+
+      <h3 class="subsection">Brand-specific banned</h3>
+      <div class="field">
+        <label class="field-label field-required">Brand-specific banned words/phrases (with rationale)</label>
+        <div class="field-hint">Format: "phrase — why we don't use it." LLMs need the rationale to pattern-match synonyms.</div>
+        <div class="suggestion-bank" data-suggest="banned"></div>
+        <div class="dynamic-list" id="bannedList" data-track-list="5"></div>
+        <button class="add-row-btn" data-add="bannedList" data-prefix="banned">+ Add banned phrase</button>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Brand-specific banned constructions (Do/Don't pairs)</label>
+        <div class="field-hint">Sentence patterns this brand never uses. Format each as a Do/Don't pair so the LLM sees the failure mode and the corrected version side by side.</div>
+        <div class="dynamic-list" id="bannedConstructions" data-track-list="5"></div>
+        <button class="add-row-btn" data-add-pair="bannedConstructions" data-prefix="construction">+ Add Do/Don't pair</button>
+      </div>
+
+      <h3 class="subsection">Brand-specific required</h3>
+      <div class="field">
+        <label class="field-label field-required" for="f_required_phrases">Required phrases &amp; anchors</label>
+        <div class="field-hint">Disclaimers, attribution lines, source anchors, and any phrase that must always appear in certain content types. Example: "All ASP students study with Dr. Lad" must appear in any program-overview content.</div>
+        <textarea id="f_required_phrases" class="long" data-track="5"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="f_brand_specific_terms">Brand-specific terminology</label>
+        <div class="field-hint">Terms unique to this brand: program names, faculty titles, internal language. Format: "term — definition · usage rule."</div>
+        <textarea id="f_brand_specific_terms" data-track="5"></textarea>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 6 — POV + TONE ============ -->
+    <section id="s6" class="section" data-section="6">
+      <div class="section-header">
+        <div>
+          <div class="section-num">SECTION 6</div>
+          <h2 class="section-title">POV &amp; Tone Spectrum</h2>
+        </div>
+        <span class="section-progress" id="sp6">0/2</span>
+      </div>
+      <p class="section-help">Pronoun rules, tense defaults, and where this brand sits across eight standard tone axes.</p>
+
+      <h3 class="subsection">POV &amp; pronoun rules</h3>
+      <div class="field">
+        <label class="field-label field-required" for="f_pov">Default POV, pronoun usage, and tense</label>
+        <div class="field-hint">Specify: (a) default voice — "we" / "I" / "you" + when to use each, (b) group nouns — "students" / "practitioners" / "members," (c) default tense — present / past / future. Include 1–2 example sentences.</div>
+        <textarea id="f_pov" class="long" data-track="6"></textarea>
+      </div>
+
+      <h3 class="subsection">Tone spectrum (drag to position)</h3>
+      <div class="callout tip">
+        <div class="callout-label">How to use these</div>
+        Drag each slider to where this brand actually sits, not where you wish it sat. The point is to capture the real voice, even if the real voice is more clinical or more warm than the wellness-industry default.
+      </div>
+
+      <div id="toneContainer">
+        <!-- Tone sliders rendered by JS -->
+      </div>
+
+      <h3 class="subsection">Tone variations by platform</h3>
+      <div class="callout tip">
+        <div class="callout-label">Platform-specific calibration</div>
+        Voice stays consistent across platforms; tone shifts. Document where the tone differs (or stays the same) so the team isn't guessing.
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="f_tone_blog">Blog — tone notes</label>
+        <div class="field-hint">How does the voice feel on the blog specifically? What's the energy of a great blog post? What does the blog avoid that other platforms might allow?</div>
+        <textarea id="f_tone_blog" data-track="6"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f_tone_email">Email — tone notes</label>
+        <textarea id="f_tone_email" data-track="6"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f_tone_instagram">Instagram — tone notes</label>
+        <textarea id="f_tone_instagram" data-track="6"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f_tone_threads">Threads — tone notes</label>
+        <textarea id="f_tone_threads" data-track="6"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f_tone_youtube">YouTube — tone notes</label>
+        <textarea id="f_tone_youtube" data-track="6"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f_tone_pinterest">Pinterest — tone notes</label>
+        <textarea id="f_tone_pinterest" data-track="6"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f_tone_ad_copy">Paid ad copy — tone notes</label>
+        <div class="field-hint">Ads are interruptive — what changes about voice when you only have 2 seconds to earn attention?</div>
+        <textarea id="f_tone_ad_copy" data-track="6"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f_tone_website">Website / program pages — tone notes</label>
+        <div class="field-hint">Often the highest-stakes content. What does this brand's website voice sound like at full strength?</div>
+        <textarea id="f_tone_website" data-track="6"></textarea>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 7 — WORKED EXAMPLES ============ -->
+    <section id="s7" class="section" data-section="7">
+      <div class="section-header">
+        <div>
+          <div class="section-num">SECTION 7</div>
+          <h2 class="section-title">Worked Examples</h2>
+        </div>
+        <span class="section-progress" id="sp7">0/15</span>
+      </div>
+      <p class="section-help">The heaviest section. Five examples per copy type, with at least one explicit Do versus Don't pair. This is the primary training data for Claude — the sharper the examples, the sharper the output.</p>
+
+      <div class="callout warning">
+        <div class="callout-label">Honest expectation</div>
+        This section takes the longest. Block out 60–90 minutes for it. Do it last, after the rest of the form is filled in — by then the voice is locked in your head and the examples come faster.
+      </div>
+
+      <div id="copyTypesContainer">
+        <!-- 15 copy types rendered by JS -->
+      </div>
+
+      <h3 class="subsection" style="margin-top: 32px;">Before / After rewrites of actual published copy</h3>
+      <div class="callout tip">
+        <div class="callout-label">Highest-leverage LLM training data</div>
+        AYC's brand doc rewrites real program page copy in Section 11. This is the most useful field in the entire form because it shows exactly how off-brand published copy gets corrected. Add as many as you have time for — even 2–3 rewrites is enough to anchor the voice.
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="f_rewrites">Before / After rewrites</label>
+        <div class="field-hint">Format each entry as: BEFORE: [actual published copy]. PROBLEM: [what it does wrong]. AFTER: [rewritten in brand voice]. Separate entries with a blank line.</div>
+        <textarea id="f_rewrites" data-track="7" style="min-height: 220px;" placeholder="BEFORE: [paste actual published copy that drifted from voice]&#10;PROBLEM: [what specifically is off]&#10;AFTER: [rewrite]&#10;&#10;BEFORE: ...&#10;PROBLEM: ...&#10;AFTER: ..."></textarea>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 8 — CTA LIBRARY ============ -->
+    <section id="s8" class="section" data-section="8">
+      <div class="section-header">
+        <div>
+          <div class="section-num">SECTION 8</div>
+          <h2 class="section-title">CTA Library</h2>
+        </div>
+        <span class="section-progress" id="sp8">0/5</span>
+      </div>
+      <p class="section-help">CTAs are the highest-leverage piece of copy in any campaign. Each brand maintains a library so the team rotates through tested options instead of inventing new ones every campaign.</p>
+
+      <div class="field">
+        <label class="field-label field-required" for="f_cta_manychat">CTAs for Instagram comment-trigger funnels (ManyChat)</label>
+        <div class="field-hint">5–10 trigger-word CTAs with rationale. Format: "Comment STUDY for the prospectus — used for ASP1 lead gen, conversion rate ~12%."</div>
+        <textarea id="f_cta_manychat" class="long" data-track="8"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label field-required" for="f_cta_direct_link">CTAs for direct-link content (Threads, Pinterest, blog)</label>
+        <div class="field-hint">5–10 direct-link CTAs.</div>
+        <textarea id="f_cta_direct_link" class="long" data-track="8"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label field-required" for="f_cta_email">CTAs for email</label>
+        <textarea id="f_cta_email" class="long" data-track="8"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label field-required" for="f_cta_high_intent">CTAs for high-intent traffic</label>
+        <div class="field-hint">For prospectus, application, curriculum overview pages — where the visitor is already considering enrollment.</div>
+        <textarea id="f_cta_high_intent" class="long" data-track="8"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f_cta_avoid">CTAs to avoid for this brand</label>
+        <div class="field-hint">CTAs that have failed, feel off-brand, or were tested and underperformed.</div>
+        <textarea id="f_cta_avoid" data-track="8"></textarea>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 9 — EDGE CASES ============ -->
+    <section id="s9" class="section" data-section="9">
+      <div class="section-header">
+        <div>
+          <div class="section-num">SECTION 9</div>
+          <h2 class="section-title">Edge Cases</h2>
+        </div>
+        <span class="section-progress" id="sp9">0/2</span>
+      </div>
+      <p class="section-help">Universal edge-case rules (Section 7 of the master Brand Doc) already cover difficult topics, crisis communication, and negative comments. This section is for brand-specific overrides only.</p>
+
+      <div class="field">
+        <label class="field-label" for="f_edge_specific">Brand-specific edge case rules</label>
+        <div class="field-hint">Anything that's specific to this brand on top of universal rules. Example: "TAI never discusses fertility content without flagging Dr. Vrinda Devani's clinical authority on the topic."</div>
+        <textarea id="f_edge_specific" class="long" data-track="9"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f_negative_comment_protocol">Negative comment response — brand-specific protocol</label>
+        <div class="field-hint">Who handles negative comments for this brand? Are there comment types that need leadership review before responding?</div>
+        <textarea id="f_negative_comment_protocol" data-track="9"></textarea>
+      </div>
+
+      <h3 class="subsection">Platform-specific banned word exceptions</h3>
+      <div class="callout tip">
+        <div class="callout-label">Where banned-list rules shift by platform</div>
+        AYC's "journey" rule has a platform exception table — banned in blog/email/IG-AYC-voice, allowed in IG quoted student speech. If this brand has any rule that varies by platform, capture it here.
+      </div>
+      <div class="field">
+        <label class="field-label" for="f_platform_exceptions">Platform-specific exceptions</label>
+        <div class="field-hint">Format: "[banned word/rule] — [where it stays banned] — [where it has an exception and why]"</div>
+        <textarea id="f_platform_exceptions" class="long" data-track="9"></textarea>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 10 — CHECKLIST ============ -->
+    <section id="s10" class="section" data-section="10">
+      <div class="section-header">
+        <div>
+          <div class="section-num">SECTION 10</div>
+          <h2 class="section-title">Brand-Specific Review Checklist</h2>
+        </div>
+        <span class="section-progress" id="sp10">0/1</span>
+      </div>
+      <p class="section-help">Brand-specific checklist items the reviewer runs after the universal checklist. AYC's structure has a separate checklist per platform because the failure modes differ — Blog vs. Email vs. Instagram have different ways to drift.</p>
+
+      <div class="field">
+        <label class="field-label field-required" for="f_checklist">General brand-specific checklist</label>
+        <div class="field-hint">Items that apply to all content for this brand. Format: each line is one yes/no check. Examples: "Dr. Lad referenced accurately per Section 1.7?" / "Institutional 'we' used throughout, no 'I' statements?" / "ASP1/ASP2 spelled correctly?"</div>
+        <textarea id="f_checklist" class="long" data-track="10" style="min-height: 140px;"></textarea>
+      </div>
+
+      <h3 class="subsection">Per-platform pre-submission checklists</h3>
+      <div class="callout tip">
+        <div class="callout-label">Different platforms drift in different ways</div>
+        AYC's blog checklist focuses on SEO + voice + opening register. The email checklist focuses on subject lines and one clear CTA. The Instagram checklist focuses on opening hook and hashtag discipline. Capture each platform's specific failure modes here.
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="f_checklist_blog">Blog post checklist</label>
+        <textarea id="f_checklist_blog" data-track="10" style="min-height: 100px;" placeholder="One check per line"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f_checklist_email">Email checklist</label>
+        <textarea id="f_checklist_email" data-track="10" style="min-height: 100px;" placeholder="One check per line"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f_checklist_instagram">Instagram checklist</label>
+        <textarea id="f_checklist_instagram" data-track="10" style="min-height: 100px;" placeholder="One check per line"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f_checklist_ad_copy">Paid ad copy checklist</label>
+        <textarea id="f_checklist_ad_copy" data-track="10" style="min-height: 100px;" placeholder="One check per line"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f_checklist_website">Website / program page checklist</label>
+        <textarea id="f_checklist_website" data-track="10" style="min-height: 100px;" placeholder="One check per line"></textarea>
+      </div>
+    </section>
+
+    <div class="footer">
+      The Brand Doc · Brand Specialist Form · TAI Portfolio<br>
+      Auto-saves to your browser. Export JSON to back up. Export Brand Chapter when complete.
+    </div>
+
+  </main>
+</div>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h2 id="modalTitle">Confirm</h2>
+    <div id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
+<script>
+//=============================================================
+// CONFIG
+//=============================================================
+const STORAGE_KEY = 'tai_brand_doc_v1';
+const BRANDS = {
+  TAI: 'The Ayurvedic Institute (TAI)',
+  AyurPranaPlus: 'AyurPrana+',
+  DrLad: 'Dr. Vasant Lad (Personal Account)',
+  SoHum: 'SoHum',
+  AYC: 'AYC (AyurPrana Transform)'
+};
+
+const TONE_AXES = [
+  ['Authoritative', 'Conversational'],
+  ['Formal', 'Casual'],
+  ['Serious', 'Playful'],
+  ['Reverent', 'Irreverent'],
+  ['Clinical', 'Embodied'],
+  ['Educational', 'Inspirational'],
+  ['Direct', 'Lyrical'],
+  ['Aspirational', 'Grounded']
+];
+
+const COPY_TYPES = [
+  { id: 'ig_caption', name: 'Instagram caption', help: 'Full caption with hook, body, CTA. ~150–250 words.' },
+  { id: 'ig_carousel', name: 'Instagram carousel slides', help: 'Slide-by-slide for a 5–10 slide carousel. Hook → expand → CTA.' },
+  { id: 'ig_story', name: 'Instagram story sequence', help: '4–5 slide sequence. Talking head 2 + graphics 2.' },
+  { id: 'threads', name: 'Threads post', help: '≤500 chars per post. Single or multi-thread with cliffhangers.' },
+  { id: 'email_subject', name: 'Email subject line + first line', help: 'Subject (curiosity-driving) + preview text + opening sentence.' },
+  { id: 'email_body', name: 'Email full nurture body', help: 'Complete nurture email, 75–200 words.' },
+  { id: 'manychat_dm', name: 'ManyChat DM message', help: '3-step funnel: Msg1 short opt-in, Msg2 link delivery, Msg3 nudge.' },
+  { id: 'pinterest_pin', name: 'Pinterest pin description', help: 'SEO-rich, ≤500 chars, keyword-dense.' },
+  { id: 'youtube_short', name: 'YouTube Short description', help: 'Short-form description with keyword tags line.' },
+  { id: 'youtube_long', name: 'YouTube long-form description + chapters', help: 'Full description with timestamp chapters.' },
+  { id: 'blog_intro', name: 'Blog post intro', help: 'Opening 2–3 paragraphs setting up the long-form piece.' },
+  { id: 'website_microcopy', name: 'Website microcopy', help: 'Buttons, form fields, error messages, empty states, navigation labels.' },
+  { id: 'ad_copy', name: 'Ad copy (Meta / Google)', help: 'Paid ad copy variations. Headline + primary text + CTA.' },
+  { id: 'sms', name: 'SMS / text message copy', help: 'Short text messages. ~160 chars.' },
+  { id: 'press_release', name: 'Press release / formal external comm', help: 'Formal third-person institutional voice.' }
+];
+
+//=============================================================
+// BASELINE CHECKLISTS (drawn from AYC's published checklist)
+// Pre-populated as a starting point; specialist edits/adds/removes
+// per their brand. Marked as "needs_review" until they Approve.
+//=============================================================
+const BASELINE_CHECKLISTS = {
+  f_checklist: [
+    'No banned words from Section 1.2 of the master Brand Doc',
+    'No contrast constructions ("not X, it\'s Y")',
+    'No emojis anywhere in the body',
+    'No institutional "I" — voice uses "we" or the brand name',
+    'Sentence rhythm varies — no string of identical-length sentences',
+    'Read aloud test — copy stumbles get rewritten',
+    'All sourced claims are sourced or sourceable on request'
+  ].join('\n'),
+
+  f_checklist_blog: [
+    'Primary keyword appears in title, first 100 words, at least one H2, meta description',
+    'Title is under 60 characters and contains no clickbait or teaser phrasing',
+    'Meta description is 150–160 characters and reads like a human wrote it',
+    'Minimum 2 internal links with descriptive anchor text',
+    'All images have descriptive alt text including a keyword where natural',
+    'Word count: 900–1,600 standard; 1,800–2,500 for pillar posts',
+    'Post does not open with a question as the first sentence',
+    'Post does not open in a beginner register if the audience is not beginners',
+    '"Journey" does not appear as a metaphor anywhere in the post',
+    'Sanskrit or specialist terms defined once in context — no glossary sidebars',
+    'One soft CTA per post — links to a specific program page, not the homepage',
+    'Every H2 answers a specific sub-question, not a tease',
+    'Paragraphs are 2–4 sentences'
+  ].join('\n'),
+
+  f_checklist_email: [
+    'Subject line leads with the most specific or useful thing — not a teaser',
+    'Subject line does not use: "Don\'t miss," "Last chance," manufactured scarcity, or excessive exclamation points',
+    'Preview text adds one new piece of information — does not repeat the subject line',
+    'If a date or deadline is referenced, it is accurate',
+    'Email has one clear purpose — not multiple competing topics',
+    'Opening sentence is specific — not "We\'re so excited to share..."',
+    'Teacher names, program names, and dates are stated explicitly — no vague "upcoming events"',
+    'Body paragraphs are 2–4 sentences',
+    'One CTA — names what the click delivers, points to a specific page not the homepage',
+    'CTA does not use: "Learn more," "Explore," "Discover," "Dive into"'
+  ].join('\n'),
+
+  f_checklist_instagram: [
+    'Caption opens with a scene, a specific person, or a precise observation — not a general statement',
+    'One idea per caption — not a summary of everything',
+    'No banned words from Section 1.2',
+    'Emojis: maximum 1–2, only where they add meaning',
+    'If fragmented sentences are used, each fragment carries complete meaning',
+    'Community or celebration captions name what was specifically witnessed before naming how it felt',
+    'If a "Comment [WORD]" CTA is used, the keyword is clear and the delivery mechanism is confirmed',
+    '6–10 hashtags maximum',
+    'All hashtags are directly relevant — no padding'
+  ].join('\n'),
+
+  f_checklist_ad_copy: [
+    'Opens with a true observation about the person or the decision they\'re considering — not a question or superlative',
+    'States the offer simply and specifically — not buried in atmospheric copy',
+    'Uses one specific differentiator — not a feature list',
+    'CTA names what the click delivers — never "Learn more" / "Explore" / "Discover"',
+    'Google Search headline matches search intent directly — no atmospheric language',
+    'No countdown pressure language unless literally true',
+    'No fabricated urgency or "limited time" without a real deadline',
+    'Maintains brand voice — does not sound like a generic promotion'
+  ].join('\n'),
+
+  f_checklist_website: [
+    'H1 contains primary keyword and is specific — under 60 characters where possible',
+    'Opening paragraph: what the program/page actually is and who it\'s for, in specific terms',
+    '"Who this is for" sections describe the actual person, not the ideal self',
+    'Faculty descriptions lead with specific expertise and lineage, not personality traits',
+    'No banned words in any audience-facing copy',
+    '"Journey" does not appear in any H1 or audience-facing copy',
+    'Pricing and commitment language is direct and respectful — no hedging',
+    'CTAs point to specific pages, not the homepage'
+  ].join('\n')
+};
+
+function loadBaselineChecklists() {
+  // Only load if the field is empty AND not already in review map
+  // (preserve any user-edited checklist on subsequent visits)
+  const reviewMap = getBrandReviewMap();
+  let any_loaded = false;
+  for (const [key, content] of Object.entries(BASELINE_CHECKLISTS)) {
+    const existing = getBrandValue(key, '').toString().trim();
+    if (existing.length === 0 && !reviewMap[key]) {
+      setBrandValue(key, content);
+      reviewMap[key] = 'needs_review';
+      any_loaded = true;
+    }
+  }
+  if (any_loaded) {
+    setBrandValue('_review_map', reviewMap);
+    saveState();
+  }
+}
+
+//=============================================================
+// SUGGESTION CHIP BANKS (from project audience research)
+// Format: per-field arrays of starter phrases the specialist
+// can click to insert. Each is editable after insertion.
+//=============================================================
+const SUGGESTION_BANKS = {
+  pain: {
+    universal: [
+      "I feel successful in my career but empty or unfulfilled.",
+      "I'm collecting modalities and certifications but my own life still feels chaotic.",
+      "I want to bring this work to my patients but my system doesn't have a place for it.",
+      "I've tried the diet, the supplements, the protocols — something is still missing.",
+      "I have the knowledge but not the framework to actually apply it day to day.",
+      "I'm exhausted from being the person who holds it all together.",
+      "I want to do meaningful work but I can't take a pay cut to do it.",
+      "I keep starting wellness practices and not sustaining them."
+    ],
+    TAI: [
+      "I'm a clinician and I keep seeing the same patients with chronic patterns I can't address with what I learned in med/nursing school.",
+      "I want a real medical framework, not another coaching certification.",
+      "I'm worried I'm too late to start a second career in medicine.",
+      "I love yoga and Ayurveda philosophy but I don't have the clinical depth I want."
+    ],
+    AyurPranaPlus: [
+      "I want to learn Ayurveda but I'm not ready for a 650-hour program.",
+      "I keep buying courses and not finishing them.",
+      "I want consistent guidance, not another one-off webinar."
+    ],
+    DrLad: [
+      "I read his book years ago and want to actually live what he teaches.",
+      "I want to study with a true lineage holder while it's still possible."
+    ],
+    SoHum: [
+      "I want to experience Ayurveda in person, not just read about it.",
+      "I'm visiting Asheville and want to see what real Ayurvedic care looks like."
+    ],
+    AYC: [
+      "My yoga practice has plateaued and I want the deeper context behind the postures.",
+      "I want to integrate Ayurveda into my yoga teaching."
+    ]
+  },
+  desire: {
+    universal: [
+      "I want to build a meaningful wellness practice that actually pays the bills.",
+      "I want financial abundance through work that feels like service.",
+      "I want to master practical Ayurvedic principles, not just memorize them.",
+      "I want confidence in real clinical application, not just theory.",
+      "I want a community of practitioners who think the way I do.",
+      "I want to close the knowing-doing gap and actually start applying what I've learned.",
+      "I want mentorship from someone who has done this for decades.",
+      "I want to bridge the ancient framework with my modern life and clients."
+    ],
+    TAI: [
+      "I want to become a credentialed Ayurvedic Health Counselor.",
+      "I want to study with Dr. Lad while it's still possible.",
+      "I want to come out of training able to take a pulse, read a tongue, and run a real consult.",
+      "I want a credential that holds up next to my MD/RN/ND."
+    ],
+    AyurPranaPlus: [
+      "I want flexible, ongoing access to teaching I can fit around my life.",
+      "I want real teachers, not influencers, in a streaming format."
+    ],
+    DrLad: [
+      "I want to hear directly from him as often as possible.",
+      "I want to follow his teaching schedule and not miss anything."
+    ],
+    SoHum: [
+      "I want to feel what an Ayurvedic space actually feels like.",
+      "I want a therapist trained in real lineage, not generic spa treatments."
+    ],
+    AYC: [
+      "I want yoga that's grounded in something deeper than postures.",
+      "I want a community for the long haul of practice."
+    ]
+  },
+  aspiration: {
+    universal: [
+      "Become a respected Ayurvedic practitioner.",
+      "Build a profitable wellness practice that I love going to every day.",
+      "Create real transformation in clients' lives — not just temporary relief.",
+      "Bridge ancient wisdom with modern life and modern bodies.",
+      "Develop my own unique methodology grounded in something older than me.",
+      "Diversify my offerings so I can share this knowledge with friends, family, community.",
+      "Be the practitioner my younger self needed."
+    ],
+    TAI: [
+      "Open my own Ayurvedic clinic.",
+      "Bring Ayurveda into the integrative team at my hospital.",
+      "Train future practitioners myself one day.",
+      "Travel to India and study at the source."
+    ],
+    AyurPranaPlus: [
+      "Build a daily practice I actually keep.",
+      "Become the most knowledgeable person in my friend group on this topic."
+    ],
+    DrLad: [
+      "Carry his teachings forward in my own work and life."
+    ],
+    SoHum: [
+      "Make Ayurvedic self-care part of my regular wellness routine.",
+      "Eventually train as a therapist myself."
+    ],
+    AYC: [
+      "Teach yoga that integrates Ayurveda intelligently.",
+      "Lead my own community of long-term practitioners."
+    ]
+  },
+  objection: {
+    universal: [
+      "It costs too much.",
+      "I don't have time alongside my current work.",
+      "I'm worried I'm too old / too late to start.",
+      "I'm not sure I can make a living from this.",
+      "I've taken courses before and not finished them.",
+      "I'm intimidated by the Sanskrit and the depth.",
+      "I'm not sure my partner / family will support this.",
+      "I'm waiting until life is less busy."
+    ],
+    TAI: [
+      "Moving to Albuquerque (or relocating) isn't realistic for me.",
+      "I'm not sure if hybrid/online format is rigorous enough.",
+      "650 hours is a huge commitment — what if I change my mind?",
+      "I'm worried I won't get enough Dr. Lad access."
+    ],
+    AyurPranaPlus: [
+      "Another monthly subscription I'll forget about.",
+      "I'm not sure it's worth it without the program structure."
+    ],
+    DrLad: [
+      "I'm not sure how much access I really get to him.",
+      "I want to learn from him directly, not just watch videos."
+    ],
+    SoHum: [
+      "I don't live in Asheville.",
+      "I've been disappointed by spa wellness before."
+    ],
+    AYC: [
+      "I already have a yoga teacher — why do I need this?",
+      "How is this different from other yoga communities I've tried?"
+    ]
+  },
+  banned: {
+    universal: [
+      "transformation — overused, vague, doesn't describe what changes.",
+      "journey — wellness-cliché, especially for serious illness.",
+      "manifest / manifesting — creator-economy spiritual usage we don't endorse.",
+      "high-vibe / low-vibe — vibrational language we avoid.",
+      "sacred container — wellness-coach jargon.",
+      "soul-led / soul work — generic spirituality language.",
+      "alignment — overused metaphor, becomes meaningless.",
+      "your highest self — coaching-industry language."
+    ],
+    TAI: [
+      "life-changing — empty superlative, doesn't describe what changes clinically.",
+      "transformative — same problem.",
+      "guru — we don't use guru language for Dr. Lad or any teacher."
+    ],
+    AyurPranaPlus: [
+      "exclusive content — feels marketing-coded; describe what's actually inside instead.",
+      "VIP — country-club language not aligned with the platform's tone."
+    ],
+    DrLad: [
+      "legendary / iconic — Dr. Lad is referenced specifically, not with celebrity language.",
+      "guru — see TAI."
+    ],
+    SoHum: [
+      "luxury — we describe what the experience does, not the price tier.",
+      "pamper / pampering — generic spa language we don't use."
+    ],
+    AYC: [
+      "manifestation — see universal.",
+      "elevate your practice — overused yoga-marketing copy."
+    ]
+  }
+};
+
+function getSuggestionsFor(field) {
+  const bank = SUGGESTION_BANKS[field];
+  if (!bank) return [];
+  const universal = bank.universal || [];
+  const brandSpecific = bank[currentBrand] || [];
+  return [...brandSpecific, ...universal];
+}
+
+//=============================================================
+// ADAPTIVE PLACEHOLDERS (per brand)
+// Updates input/textarea placeholder text when brand changes
+//=============================================================
+const PLACEHOLDERS = {
+  TAI: {
+    f_positioning: 'e.g. A 40-year-old Ayurvedic medical school led by Dr. Vasant Lad, training clinicians at every level.',
+    f_founding_year: 'e.g. 1984 — founded by Dr. Vasant Lad in Albuquerque, NM',
+    f_persona_1: 'e.g. "Healthcare Crossover Sarah" — an ICU nurse with 12 years experience who is burned out on emergency-only care and looking for a framework to address the chronic patterns she sees in patients.',
+    f_voice_negative_anchors: 'e.g. Goop. Wellness coaches on Instagram. Generic coaching certification programs.',
+    f_demo_age: 'e.g. 30–60, concentrated 35–50',
+    f_demo_gender: 'e.g. 70% women, 30% men',
+    f_demo_income: 'e.g. $75k+ household',
+    f_demo_geo: 'e.g. US-based, with strongest pockets in CA, NY, NM, NC'
+  },
+  AyurPranaPlus: {
+    f_positioning: 'e.g. The streaming and membership platform for Ayurvedic teaching — courses, series, and live events with TAI faculty.',
+    f_founding_year: 'e.g. [year] — launched as the digital arm of The Ayurvedic Institute',
+    f_persona_1: 'e.g. "Curious Aspiring Practitioner Jess" — has read several Ayurveda books, follows the space online, but isn\'t ready to commit to ASP1; wants flexible deepening.',
+    f_voice_negative_anchors: 'e.g. MasterClass marketing copy. Influencer course launches. Generic streaming platforms.',
+    f_demo_age: 'e.g. 28–55',
+    f_demo_gender: 'e.g. 75% women, 25% men',
+    f_demo_income: 'e.g. $50k+ household (lower threshold than TAI)',
+    f_demo_geo: 'e.g. Global, English-speaking; US, UK, AU, CA strongest'
+  },
+  DrLad: {
+    f_positioning: 'e.g. Dr. Vasant Lad\'s personal teaching account — first-person sharing of teachings, reflections, and announcements.',
+    f_founding_year: 'e.g. Account established [year]; teaching career since 1979.',
+    f_persona_1: 'e.g. "Long-time Reader Mark" — has owned a copy of Textbook of Ayurveda for 8+ years, wants more direct access to Dr. Lad\'s ongoing teaching.',
+    f_voice_negative_anchors: 'e.g. Celebrity-spiritual-teacher accounts. Influencer-style personal brands. Anyone using "guru" language.',
+    f_demo_age: 'e.g. 35–70 (skews older than other accounts)',
+    f_demo_gender: 'e.g. 65% women, 35% men',
+    f_demo_income: 'Not a primary segmentation lens for this account.',
+    f_demo_geo: 'e.g. Global, with strong Indian diaspora following alongside US base.'
+  },
+  SoHum: {
+    f_positioning: 'e.g. A TAI-graduate-staffed Ayurvedic wellness space in Asheville — bringing the teaching into hands-on care.',
+    f_founding_year: 'e.g. [year] — opened in Asheville, NC',
+    f_persona_1: 'e.g. "Wellness-Curious Asheville Local Karen" — interested in alternative care, has tried massage and acupuncture, looking for something with more depth.',
+    f_voice_negative_anchors: 'e.g. Generic luxury day spas. Resort wellness packages. Wellness retreat copy.',
+    f_demo_age: 'e.g. 30–65',
+    f_demo_gender: 'e.g. 80% women, 20% men',
+    f_demo_income: 'e.g. $65k+ household',
+    f_demo_geo: 'e.g. Asheville, NC + visitors to the area'
+  },
+  AYC: {
+    f_positioning: 'e.g. The AyurPrana yoga community — yoga practice grounded in Ayurvedic understanding.',
+    f_founding_year: 'e.g. [year]',
+    f_persona_1: 'e.g. "Experienced Yoga Teacher Devi" — 200/500 RYT certified, looking to deepen with the Ayurvedic context she didn\'t get in teacher training.',
+    f_voice_negative_anchors: 'e.g. Modern fitness yoga marketing. Influencer yoga teachers. Manifestation-coded yoga content.',
+    f_demo_age: 'e.g. 25–55',
+    f_demo_gender: 'e.g. 85% women, 15% men',
+    f_demo_income: 'e.g. $50k+ household',
+    f_demo_geo: 'e.g. Global, English-speaking'
+  }
+};
+
+function applyPlaceholders() {
+  const set = PLACEHOLDERS[currentBrand] || {};
+  Object.keys(set).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.placeholder = set[id];
+  });
+}
+
+//=============================================================
+// STATE
+//=============================================================
+let currentBrand = 'TAI';
+let state = loadState();
+let saveTimer = null;
+
+function loadState() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch (e) { console.error('Failed to load state:', e); }
+  return { brands: {} };
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    setSaveStatus('Auto-saved · ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+  } catch (e) {
+    setSaveStatus('Save failed', true);
+  }
+}
+
+function setSaveStatus(text, error = false) {
+  const el = document.getElementById('saveStatus');
+  el.textContent = text;
+  el.className = error ? 'save-status error' : 'save-status';
+}
+
+function getBrandData() {
+  if (!state.brands[currentBrand]) state.brands[currentBrand] = {};
+  return state.brands[currentBrand];
+}
+
+function setBrandValue(key, value) {
+  const data = getBrandData();
+  data[key] = value;
+  scheduleSave();
+}
+
+function getBrandValue(key, fallback = '') {
+  const data = getBrandData();
+  return data[key] !== undefined ? data[key] : fallback;
+}
+
+function scheduleSave() {
+  if (saveTimer) clearTimeout(saveTimer);
+  setSaveStatus('Saving...');
+  document.getElementById('saveStatus').classList.add('saving');
+  saveTimer = setTimeout(() => {
+    saveState();
+    document.getElementById('saveStatus').classList.remove('saving');
+    updateProgress();
+  }, 400);
+}
+
+//=============================================================
+// RENDER TONE SLIDERS + COPY TYPES + DYNAMIC LISTS
+//=============================================================
+function renderToneSliders() {
+  const container = document.getElementById('toneContainer');
+  container.innerHTML = TONE_AXES.map((axis, i) => `
+    <div class="tone-slider">
+      <div class="tone-labels">
+        <span class="left">${axis[0]}</span>
+        <span class="right">${axis[1]}</span>
+      </div>
+      <input type="range" min="0" max="100" value="50" class="tone-input" data-tone="${i}" id="tone_${i}">
+    </div>
+  `).join('');
+  TONE_AXES.forEach((_, i) => {
+    const input = document.getElementById(`tone_${i}`);
+    input.addEventListener('input', () => setBrandValue(`tone_${i}`, parseInt(input.value)));
+  });
+}
+
+function renderCopyTypes() {
+  const container = document.getElementById('copyTypesContainer');
+  container.innerHTML = COPY_TYPES.map(ct => `
+    <div class="example-group" id="ct_${ct.id}">
+      <div class="example-group-header" onclick="toggleExampleGroup('ct_${ct.id}')">
+        <div>
+          <div class="example-group-title">${ct.name}</div>
+          <div class="example-group-meta">${ct.help}</div>
+        </div>
+        <div>
+          <span class="example-group-meta" id="ct_${ct.id}_count">0/5</span>
+          <span class="toggle-icon">▶</span>
+        </div>
+      </div>
+      <div class="example-group-body">
+        <div class="field">
+          <label class="field-label">Example 1</label>
+          <textarea class="example" data-track="7" data-copytype="${ct.id}" data-example="1"></textarea>
+        </div>
+        <div class="field">
+          <label class="field-label">Example 2</label>
+          <textarea class="example" data-track="7" data-copytype="${ct.id}" data-example="2"></textarea>
+        </div>
+        <div class="field">
+          <label class="field-label">Example 3</label>
+          <textarea class="example" data-track="7" data-copytype="${ct.id}" data-example="3"></textarea>
+        </div>
+        <div class="pair-block">
+          <div class="pair-block-header">Example 4 — Do versus Don't pair (required)</div>
+          <div class="pair-grid">
+            <div class="pair-cell dont">
+              <span class="pair-tag dont">DON'T</span>
+              <textarea data-track="7" data-copytype="${ct.id}" data-example="dont" placeholder="Off-brand version of this copy type"></textarea>
+            </div>
+            <div class="pair-cell do">
+              <span class="pair-tag do">DO</span>
+              <textarea data-track="7" data-copytype="${ct.id}" data-example="do" placeholder="Corrected on-brand version of the same content"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISUAL DESIGN BLOCK -->
+        <div class="visual-design-block">
+          <h4 class="vdb-header">Visual design reference</h4>
+          <p class="vdb-help">Upload screenshots of published examples for this copy type to the Drive folder, then paste the folder URL below. Use the analysis button to generate a prompt for Claude — paste Claude's analyzed visual guidelines back in the field below.</p>
+
+          <div class="field">
+            <label class="field-label">Drive folder URL — visual examples for this copy type</label>
+            <div class="vdb-row">
+              <input type="text" data-track="7" data-copytype="${ct.id}" data-example="drive_url" placeholder="https://drive.google.com/drive/folders/...">
+              <button class="vdb-btn-analyze" data-analyze="${ct.id}">Generate analysis prompt</button>
+              <a class="vdb-btn-open" data-drive-open="${ct.id}" href="#" target="_blank" rel="noopener">Open</a>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">Notes for the design analysis</label>
+            <div class="field-hint">Optional. Anything the analysis should pay extra attention to: specific layout patterns, color use, typography choices, etc.</div>
+            <textarea class="short" data-track="7" data-copytype="${ct.id}" data-example="design_notes" placeholder="e.g. 'Pay attention to how serif headlines pair with sans-serif body. Note that all carousels start with full-bleed image, slide 2+ uses navy bar at top.'"></textarea>
+          </div>
+
+          <div class="field">
+            <label class="field-label">Analyzed visual guidelines (paste from Claude after analysis + your approval)</label>
+            <div class="field-hint">After running the analysis prompt with Claude in chat, review the output, edit it if needed, then paste the approved version here. This becomes the design layer of the brand chapter.</div>
+            <textarea class="long" data-track="7" data-copytype="${ct.id}" data-example="visual_guidelines" placeholder="Paste analyzed and approved visual guidelines here"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleExampleGroup(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+//=============================================================
+// DYNAMIC LISTS (pain points, banned phrases, etc.)
+//=============================================================
+function addRow(listId, prefix, placeholder = '', initialValue = '') {
+  const list = document.getElementById(listId);
+  const idx = list.children.length;
+  const row = document.createElement('div');
+  row.className = 'dynamic-row';
+  const ta = document.createElement('textarea');
+  ta.className = 'short';
+  ta.dataset.track = list.dataset.trackList;
+  ta.dataset.list = prefix;
+  ta.dataset.idx = idx;
+  ta.placeholder = placeholder;
+  ta.value = initialValue;
+  const btn = document.createElement('button');
+  btn.className = 'dynamic-row-remove';
+  btn.title = 'Remove';
+  btn.textContent = '×';
+  btn.dataset.removeRow = listId;
+  btn.dataset.prefix = prefix;
+  row.appendChild(ta);
+  row.appendChild(btn);
+  list.appendChild(row);
+  ta.addEventListener('input', () => {
+    saveDynamicList(listId, prefix);
+    scheduleSave();
+    refreshChipAddedStates();
+  });
+  if (initialValue) {
+    saveDynamicList(listId, prefix);
+    scheduleSave();
+    refreshChipAddedStates();
+  } else {
+    ta.focus();
+  }
+}
+
+function addPair(listId, prefix) {
+  const list = document.getElementById(listId);
+  const idx = list.children.length;
+  const block = document.createElement('div');
+  block.className = 'pair-block';
+  block.style.marginTop = '12px';
+  block.innerHTML = `
+    <div class="pair-block-header" style="display:flex; justify-content: space-between; align-items: center;">
+      <span>Do/Don't pair</span>
+      <button class="dynamic-row-remove" data-remove-pair="${listId}" data-prefix="${prefix}" title="Remove" style="height: 28px; width: 28px;">×</button>
+    </div>
+    <div class="pair-grid">
+      <div class="pair-cell dont">
+        <span class="pair-tag dont">DON'T</span>
+        <textarea data-track="${list.dataset.trackList}" data-list="${prefix}" data-idx="${idx}" data-pair="dont"></textarea>
+      </div>
+      <div class="pair-cell do">
+        <span class="pair-tag do">DO</span>
+        <textarea data-track="${list.dataset.trackList}" data-list="${prefix}" data-idx="${idx}" data-pair="do"></textarea>
+      </div>
+    </div>
+  `;
+  list.appendChild(block);
+  block.querySelectorAll('textarea').forEach(ta => {
+    ta.addEventListener('input', () => {
+      saveDynamicListPairs(listId, prefix);
+      scheduleSave();
+    });
+  });
+}
+
+function removeRow(btn, listId, prefix) {
+  btn.parentElement.remove();
+  saveDynamicList(listId, prefix);
+  scheduleSave();
+  reindexList(listId);
+  refreshChipAddedStates();
+}
+
+function removePairRow(btn, listId, prefix) {
+  btn.closest('.pair-block').remove();
+  saveDynamicListPairs(listId, prefix);
+  scheduleSave();
+  reindexPairList(listId);
+}
+
+function reindexList(listId) {
+  const list = document.getElementById(listId);
+  Array.from(list.querySelectorAll('textarea')).forEach((ta, i) => ta.dataset.idx = i);
+}
+function reindexPairList(listId) {
+  const list = document.getElementById(listId);
+  Array.from(list.querySelectorAll('.pair-block')).forEach((block, i) => {
+    block.querySelectorAll('textarea').forEach(ta => ta.dataset.idx = i);
+  });
+}
+
+function saveDynamicList(listId, prefix) {
+  const list = document.getElementById(listId);
+  const items = Array.from(list.querySelectorAll('textarea')).map(ta => ta.value);
+  setBrandValue(`list_${prefix}`, items);
+}
+
+function saveDynamicListPairs(listId, prefix) {
+  const list = document.getElementById(listId);
+  const blocks = list.querySelectorAll('.pair-block');
+  const pairs = Array.from(blocks).map(block => ({
+    dont: block.querySelector('[data-pair="dont"]').value,
+    do: block.querySelector('[data-pair="do"]').value
+  }));
+  setBrandValue(`list_${prefix}`, pairs);
+}
+
+function loadDynamicList(listId, prefix, placeholder = '') {
+  const list = document.getElementById(listId);
+  list.innerHTML = '';
+  const data = getBrandValue(`list_${prefix}`, []);
+  if (Array.isArray(data) && data.length) {
+    data.forEach(val => {
+      const idx = list.children.length;
+      const row = document.createElement('div');
+      row.className = 'dynamic-row';
+      const ta = document.createElement('textarea');
+      ta.className = 'short';
+      ta.dataset.track = list.dataset.trackList;
+      ta.dataset.list = prefix;
+      ta.dataset.idx = idx;
+      ta.placeholder = placeholder;
+      ta.value = val;
+      const btn = document.createElement('button');
+      btn.className = 'dynamic-row-remove';
+      btn.title = 'Remove';
+      btn.textContent = '×';
+      btn.dataset.removeRow = listId;
+      btn.dataset.prefix = prefix;
+      row.appendChild(ta);
+      row.appendChild(btn);
+      list.appendChild(row);
+      ta.addEventListener('input', () => {
+        saveDynamicList(listId, prefix);
+        scheduleSave();
+      });
+    });
+  }
+}
+
+function loadDynamicPairList(listId, prefix) {
+  const list = document.getElementById(listId);
+  list.innerHTML = '';
+  const data = getBrandValue(`list_${prefix}`, []);
+  if (Array.isArray(data) && data.length) {
+    data.forEach(pair => {
+      const idx = list.children.length;
+      const block = document.createElement('div');
+      block.className = 'pair-block';
+      block.style.marginTop = '12px';
+      block.innerHTML = `
+        <div class="pair-block-header" style="display:flex; justify-content: space-between; align-items: center;">
+          <span>Do/Don't pair</span>
+          <button class="dynamic-row-remove" data-remove-pair="${listId}" data-prefix="${prefix}" title="Remove" style="height: 28px; width: 28px;">×</button>
+        </div>
+        <div class="pair-grid">
+          <div class="pair-cell dont">
+            <span class="pair-tag dont">DON'T</span>
+            <textarea data-track="${list.dataset.trackList}" data-list="${prefix}" data-idx="${idx}" data-pair="dont">${escapeHtml(pair.dont || '')}</textarea>
+          </div>
+          <div class="pair-cell do">
+            <span class="pair-tag do">DO</span>
+            <textarea data-track="${list.dataset.trackList}" data-list="${prefix}" data-idx="${idx}" data-pair="do">${escapeHtml(pair.do || '')}</textarea>
+          </div>
+        </div>
+      `;
+      list.appendChild(block);
+      block.querySelectorAll('textarea').forEach(ta => {
+        ta.addEventListener('input', () => {
+          saveDynamicListPairs(listId, prefix);
+          scheduleSave();
+        });
+      });
+    });
+  }
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+//=============================================================
+// LOAD / SWITCH BRAND
+//=============================================================
+function switchBrand(brand) {
+  // Save current state first
+  saveAllFieldValues();
+  saveState();
+  // Switch
+  currentBrand = brand;
+  document.querySelectorAll('.brand-label').forEach(el => el.textContent = BRANDS[brand]);
+  document.getElementById('brandLabelSidebar').textContent = brand;
+  applyPlaceholders();
+  loadBaselineChecklists();
+  loadAllFieldValues();
+  renderSuggestionBanks();
+  refreshChipAddedStates();
+  applyReviewBadges();
+  updateDriveFolderButton();
+  updateProgress();
+  // Reset upload widget UI
+  const uploadStatus = document.getElementById('uploadStatus');
+  const uploadResults = document.getElementById('uploadResults');
+  if (uploadStatus) uploadStatus.classList.remove('active');
+  if (uploadResults) uploadResults.classList.remove('active');
+  setSaveStatus('Switched to ' + BRANDS[brand]);
+}
+
+function saveAllFieldValues() {
+  // Plain inputs (f_ fields and ctx_ fields)
+  document.querySelectorAll('input[id^="f_"], textarea[id^="f_"], input[id^="ctx_"], textarea[id^="ctx_"]').forEach(el => {
+    setBrandValue(el.id, el.value);
+  });
+  // Copy type examples
+  document.querySelectorAll('textarea[data-copytype]').forEach(ta => {
+    setBrandValue(`example_${ta.dataset.copytype}_${ta.dataset.example}`, ta.value);
+  });
+  // Dynamic lists
+  saveDynamicList('painList', 'pain');
+  saveDynamicList('desireList', 'desire');
+  saveDynamicList('aspirationList', 'aspiration');
+  saveDynamicList('objectionList', 'objection');
+  saveDynamicList('bannedList', 'banned');
+  saveDynamicListPairs('bannedConstructions', 'construction');
+  // Tone sliders
+  TONE_AXES.forEach((_, i) => {
+    const slider = document.getElementById(`tone_${i}`);
+    if (slider) setBrandValue(`tone_${i}`, parseInt(slider.value));
+  });
+}
+
+function loadAllFieldValues() {
+  // Plain inputs (f_ fields and ctx_ fields)
+  document.querySelectorAll('input[id^="f_"], textarea[id^="f_"], input[id^="ctx_"], textarea[id^="ctx_"]').forEach(el => {
+    el.value = getBrandValue(el.id, '');
+  });
+  // Copy type examples
+  document.querySelectorAll('textarea[data-copytype]').forEach(ta => {
+    ta.value = getBrandValue(`example_${ta.dataset.copytype}_${ta.dataset.example}`, '');
+  });
+  // Dynamic lists
+  loadDynamicList('painList', 'pain', '');
+  loadDynamicList('desireList', 'desire', '');
+  loadDynamicList('aspirationList', 'aspiration', '');
+  loadDynamicList('objectionList', 'objection', '');
+  loadDynamicList('bannedList', 'banned', '');
+  loadDynamicPairList('bannedConstructions', 'construction');
+  // Tone sliders
+  TONE_AXES.forEach((_, i) => {
+    const slider = document.getElementById(`tone_${i}`);
+    if (slider) slider.value = getBrandValue(`tone_${i}`, 50);
+  });
+  refreshChipAddedStates();
+  updateCopyTypeCounts();
+  updateCopyTypeDriveButtons();
+}
+
+//=============================================================
+// PROGRESS TRACKING
+//=============================================================
+function updateProgress() {
+  // Section-by-section
+  const sectionCounts = {
+    1: countFilledFields(['f_positioning', 'f_mission_northstar', 'f_founding_year', 'f_founding_story']),
+    2: 0,
+    3: countFilledFields(['f_persona_1', 'f_persona_2', 'f_persona_3']),
+    4: countFilledFields(['f_voice_three_sentences', 'f_voice_rhythm', 'f_voice_negative_anchors']),
+    5: 0,
+    6: countFilledFields(['f_pov']),
+    7: 0,
+    8: countFilledFields(['f_cta_manychat', 'f_cta_direct_link', 'f_cta_email', 'f_cta_high_intent', 'f_cta_avoid']),
+    9: countFilledFields(['f_edge_specific', 'f_negative_comment_protocol']),
+    10: countFilledFields(['f_checklist'])
+  };
+
+  // Section 2 — ICP
+  const s2demo = countFilledFields(['f_demo_age', 'f_demo_occupation', 'f_psycho_beliefs', 'f_decision_triggers']);
+  const s2lists = (getBrandValue('list_pain', []).filter(Boolean).length > 0 ? 1 : 0)
+                + (getBrandValue('list_desire', []).filter(Boolean).length > 0 ? 1 : 0)
+                + (getBrandValue('list_aspiration', []).filter(Boolean).length > 0 ? 1 : 0)
+                + (getBrandValue('list_objection', []).filter(Boolean).length > 0 ? 1 : 0)
+                + countFilledFields(['f_psycho_consume']);
+  sectionCounts[2] = s2demo + s2lists;
+
+  // Section 5 — Banned + Required
+  const s5banned = (getBrandValue('list_banned', []).filter(Boolean).length > 0 ? 1 : 0);
+  const s5pairs = (getBrandValue('list_construction', []).filter(p => (p.dont || p.do)).length > 0 ? 1 : 0);
+  const s5other = countFilledFields(['f_required_phrases', 'f_brand_specific_terms']);
+  sectionCounts[5] = s5banned + s5pairs + s5other;
+
+  // Section 7 — Worked Examples
+  let s7count = 0;
+  COPY_TYPES.forEach(ct => {
+    const filled = ['1', '2', '3', 'do', 'dont'].filter(ex =>
+      getBrandValue(`example_${ct.id}_${ex}`, '').trim().length > 0
+    ).length;
+    if (filled >= 3) s7count++; // count copy type as "complete" if 3+ filled
+  });
+  sectionCounts[7] = s7count;
+
+  // Update section progress badges
+  const sectionMaxes = { 1: 4, 2: 9, 3: 3, 4: 3, 5: 4, 6: 2, 7: 15, 8: 5, 9: 2, 10: 1 };
+  let totalCount = 0, totalMax = 0;
+  Object.keys(sectionCounts).forEach(s => {
+    const cnt = Math.min(sectionCounts[s], sectionMaxes[s]);
+    const max = sectionMaxes[s];
+    const sp = document.getElementById(`sp${s}`);
+    const ns = document.getElementById(`ns${s}`);
+    const text = `${cnt}/${max}`;
+    if (sp) {
+      sp.textContent = text;
+      sp.classList.toggle('complete', cnt === max);
+    }
+    if (ns) {
+      ns.textContent = text;
+      ns.classList.remove('complete', 'partial');
+      if (cnt === max) ns.classList.add('complete');
+      else if (cnt > 0) ns.classList.add('partial');
+    }
+    totalCount += cnt;
+    totalMax += max;
+  });
+
+  const pct = Math.round((totalCount / totalMax) * 100);
+  document.getElementById('progressText').textContent = `${pct}% complete (${BRANDS[currentBrand]})`;
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  updateCopyTypeCounts();
+}
+
+function countFilledFields(ids) {
+  return ids.filter(id => {
+    const v = getBrandValue(id, '');
+    return v && v.toString().trim().length > 0;
+  }).length;
+}
+
+function updateCopyTypeCounts() {
+  COPY_TYPES.forEach(ct => {
+    const filled = ['1', '2', '3', 'do', 'dont'].filter(ex =>
+      getBrandValue(`example_${ct.id}_${ex}`, '').trim().length > 0
+    ).length;
+    const el = document.getElementById(`ct_${ct.id}_count`);
+    if (el) {
+      el.textContent = `${filled}/5`;
+      el.style.color = filled >= 4 ? 'var(--keep)' : (filled > 0 ? 'var(--tan)' : '');
+      el.style.fontWeight = '700';
+    }
+  });
+}
+
+//=============================================================
+// EXPORT / IMPORT
+//=============================================================
+function exportJson() {
+  saveAllFieldValues();
+  saveState();
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `tai-brand-doc-progress-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importJson(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      showModal('Import progress?',
+        'This will replace your current saved data with the imported file. Existing browser data for all 5 brands will be overwritten. Continue?',
+        [
+          { text: 'Cancel', class: 'btn-secondary', action: closeModal },
+          { text: 'Import', class: 'btn-primary', action: () => {
+            state = imported;
+            saveState();
+            loadAllFieldValues();
+            updateProgress();
+            closeModal();
+            setSaveStatus('Import complete');
+          }}
+        ]);
+    } catch (err) {
+      showModal('Import failed', 'The file did not parse as valid JSON. Make sure it was exported from this form.',
+        [{ text: 'OK', class: 'btn-primary', action: closeModal }]);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function exportMarkdown() {
+  saveAllFieldValues();
+  saveState();
+  const md = generateMarkdown(currentBrand);
+  const blob = new Blob([md], { type: 'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `brand-chapter-${currentBrand}-${new Date().toISOString().split('T')[0]}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function generateMarkdown(brand) {
+  const data = state.brands[brand] || {};
+  const v = (k, fb = '_[not provided]_') => (data[k] && data[k].toString().trim()) || fb;
+  const list = (k) => {
+    const arr = data[`list_${k}`] || [];
+    return arr.filter(Boolean).map((item, i) => `${i + 1}. ${item}`).join('\n') || '_[not provided]_';
+  };
+  const pairList = (k) => {
+    const arr = data[`list_${k}`] || [];
+    return arr.filter(p => p.dont || p.do).map((p, i) =>
+      `### Pair ${i + 1}\n\n**DON'T:** ${p.dont || ''}\n\n**DO:** ${p.do || ''}`
+    ).join('\n\n') || '_[not provided]_';
+  };
+  const tone = TONE_AXES.map((axis, i) => {
+    const val = data[`tone_${i}`] !== undefined ? data[`tone_${i}`] : 50;
+    const dir = val < 40 ? `← ${axis[0]}` : (val > 60 ? `${axis[1]} →` : 'centered');
+    return `- **${axis[0]} ↔ ${axis[1]}**: ${val}/100 (${dir})`;
+  }).join('\n');
+
+  const examples = COPY_TYPES.map(ct => {
+    const ex1 = v(`example_${ct.id}_1`);
+    const ex2 = v(`example_${ct.id}_2`);
+    const ex3 = v(`example_${ct.id}_3`);
+    const exDo = v(`example_${ct.id}_do`);
+    const exDont = v(`example_${ct.id}_dont`);
+    const driveUrl = v(`example_${ct.id}_drive_url`);
+    const designNotes = v(`example_${ct.id}_design_notes`);
+    const visualGuidelines = v(`example_${ct.id}_visual_guidelines`);
+    let visualBlock = '';
+    if (driveUrl || visualGuidelines || designNotes) {
+      visualBlock = `\n\n#### Visual design guidelines — ${ct.name}\n`;
+      if (driveUrl) visualBlock += `\n**Drive folder (visual examples):** ${driveUrl}\n`;
+      if (designNotes) visualBlock += `\n**Specialist notes:** ${designNotes}\n`;
+      if (visualGuidelines) visualBlock += `\n**Approved guidelines:**\n${visualGuidelines}\n`;
+    }
+    return `### ${ct.name}\n\n**Example 1:**\n${ex1}\n\n**Example 2:**\n${ex2}\n\n**Example 3:**\n${ex3}\n\n**Example 4 — DON'T:**\n${exDont}\n\n**Example 4 — DO:**\n${exDo}${visualBlock}`;
+  }).join('\n\n---\n\n');
+
+  return `# Brand Chapter — ${BRANDS[brand]}
+
+> Generated from interactive brand specialist form on ${new Date().toLocaleDateString()}.
+> This chapter slots into the master Brand Doc under Section 4.
+
+---
+
+## 0. Brand Context (reference materials)
+
+- **Website:** ${v('ctx_website', '_(not provided)_')}
+- **Social handles:** ${v('ctx_handles', '_(not provided)_')}
+- **Visual assets folder (Drive):** ${v('ctx_drive_folder', '_(not provided)_')}
+
+---
+
+## 1. Brand Identity
+
+### Document maintenance
+- **Version:** ${v('f_doc_version', '_(not set)_')}
+- **Date:** ${v('f_doc_date', '_(not set)_')}
+- **Status:** ${v('f_doc_status', '_(not set)_')}
+- **Author:** ${v('f_doc_author', '_(not set)_')}
+- **Owner:** ${v('f_doc_owner', '_(not set)_')}
+
+**Update criteria:**
+${v('f_update_criteria')}
+
+### Brand identity
+**One-line positioning:**
+${v('f_positioning')}
+
+**Mission & North Star:**
+${v('f_mission_northstar')}
+
+**Tagline:** ${v('f_tagline', '_(none)_')}
+
+**Founded:** ${v('f_founding_year')}
+
+**Founding story:**
+${v('f_founding_story')}
+
+---
+
+## 2. Ideal Customer Profile
+
+### Demographic snapshot
+- **Age range:** ${v('f_demo_age')}
+- **Gender split:** ${v('f_demo_gender')}
+- **Income range:** ${v('f_demo_income')}
+- **Education:** ${v('f_demo_education')}
+- **Geographic concentration:** ${v('f_demo_geo')}
+- **Occupation patterns:** ${v('f_demo_occupation')}
+
+### Psychographic profile
+**Core beliefs:** ${v('f_psycho_beliefs')}
+
+**Already tried:** ${v('f_psycho_tried')}
+
+**Reads/watches/trusts:** ${v('f_psycho_consume')}
+
+### Pain points
+${list('pain')}
+
+### Desires
+${list('desire')}
+
+### Aspirations
+${list('aspiration')}
+
+### Objections
+${list('objection')}
+
+### Decision triggers
+${v('f_decision_triggers')}
+
+---
+
+## 3. Audience Personas
+
+**Persona 1:**
+${v('f_persona_1')}
+
+**Persona 2:**
+${v('f_persona_2', '_(none)_')}
+
+**Persona 3:**
+${v('f_persona_3', '_(none)_')}
+
+---
+
+## 4. Voice Fingerprint
+
+**Voice in three sentences:**
+${v('f_voice_three_sentences')}
+
+**Sentence rhythm specifics:**
+${v('f_voice_rhythm')}
+
+**What this brand never sounds like:**
+${v('f_voice_negative_anchors')}
+
+### Tonal benchmarks
+
+**Primary benchmark:**
+${v('f_benchmark_primary')}
+
+**Specific passages worth studying:**
+${v('f_benchmark_passages')}
+
+**Ecosystem voice benchmarks:**
+${v('f_benchmark_ecosystem')}
+
+**A piece that needs revision (gap reference):**
+${v('f_benchmark_off_voice')}
+
+---
+
+## 5. Banned & Required Phrases
+
+### Brand-specific banned (in addition to universal banned list)
+${list('banned')}
+
+### Brand-specific banned constructions
+${pairList('construction')}
+
+### Required phrases & anchors
+${v('f_required_phrases')}
+
+### Brand-specific terminology
+${v('f_brand_specific_terms')}
+
+---
+
+## 6. POV & Tone Spectrum
+
+**POV, pronouns, tense:**
+${v('f_pov')}
+
+**Tone position (overall):**
+${tone}
+
+### Tone variations by platform
+- **Blog:** ${v('f_tone_blog', '_(not specified)_')}
+- **Email:** ${v('f_tone_email', '_(not specified)_')}
+- **Instagram:** ${v('f_tone_instagram', '_(not specified)_')}
+- **Threads:** ${v('f_tone_threads', '_(not specified)_')}
+- **YouTube:** ${v('f_tone_youtube', '_(not specified)_')}
+- **Pinterest:** ${v('f_tone_pinterest', '_(not specified)_')}
+- **Paid ads:** ${v('f_tone_ad_copy', '_(not specified)_')}
+- **Website / program pages:** ${v('f_tone_website', '_(not specified)_')}
+
+---
+
+## 7. Worked Examples
+
+${examples}
+
+### Before / After rewrites of actual published copy
+${v('f_rewrites')}
+
+---
+
+## 8. CTA Library
+
+### ManyChat / comment-trigger CTAs
+${v('f_cta_manychat')}
+
+### Direct-link CTAs (Threads, Pinterest, blog)
+${v('f_cta_direct_link')}
+
+### Email CTAs
+${v('f_cta_email')}
+
+### High-intent CTAs
+${v('f_cta_high_intent')}
+
+### CTAs to avoid
+${v('f_cta_avoid')}
+
+---
+
+## 9. Edge Cases
+
+**Brand-specific edge case rules:**
+${v('f_edge_specific')}
+
+**Negative comment protocol:**
+${v('f_negative_comment_protocol')}
+
+**Platform-specific banned-word exceptions:**
+${v('f_platform_exceptions')}
+
+---
+
+## 10. Pre-Submission Review Checklists
+
+### General brand checklist
+${v('f_checklist')}
+
+### Blog post checklist
+${v('f_checklist_blog')}
+
+### Email checklist
+${v('f_checklist_email')}
+
+### Instagram checklist
+${v('f_checklist_instagram')}
+
+### Paid ad copy checklist
+${v('f_checklist_ad_copy')}
+
+### Website / program page checklist
+${v('f_checklist_website')}
+`;
+}
+
+function clearCurrentBrand() {
+  showModal('Clear ' + BRANDS[currentBrand] + '?',
+    'This deletes all data for this brand only. Other brands are not affected. This cannot be undone.',
+    [
+      { text: 'Cancel', class: 'btn-secondary', action: closeModal },
+      { text: 'Clear', class: 'btn-tan', action: () => {
+        delete state.brands[currentBrand];
+        saveState();
+        loadAllFieldValues();
+        updateProgress();
+        closeModal();
+      }}
+    ]);
+}
+
+//=============================================================
+// MODAL
+//=============================================================
+function showModal(title, body, actions) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = `<p>${body}</p>`;
+  const actionsEl = document.getElementById('modalActions');
+  actionsEl.innerHTML = '';
+  actions.forEach(a => {
+    const btn = document.createElement('button');
+    btn.className = `btn ${a.class}`;
+    btn.textContent = a.text;
+    btn.onclick = a.action;
+    actionsEl.appendChild(btn);
+  });
+  document.getElementById('modal').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+  const inner = document.getElementById('modal').querySelector('.modal');
+  if (inner) inner.classList.remove('prompt-modal-content');
+}
+
+//=============================================================
+// SCROLL + NAV
+//=============================================================
+function scrollToSection(id, evt) {
+  document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  if (evt && evt.target) {
+    const navItem = evt.target.closest('.nav-item');
+    if (navItem) navItem.classList.add('active');
+  }
+}
+
+//=============================================================
+// SUGGESTION CHIP RENDERING
+//=============================================================
+function renderSuggestionBanks() {
+  document.querySelectorAll('.suggestion-bank[data-suggest]').forEach(bank => {
+    const field = bank.dataset.suggest;
+    const suggestions = getSuggestionsFor(field);
+    const brandName = BRANDS[currentBrand] || currentBrand;
+    const brandSpecificCount = (SUGGESTION_BANKS[field] && SUGGESTION_BANKS[field][currentBrand] || []).length;
+    const universalCount = (SUGGESTION_BANKS[field] && SUGGESTION_BANKS[field].universal || []).length;
+    let chipsHtml = `<div class="suggestion-bank-label">
+      <span>Click a suggestion to insert as a starter — then refine in this brand's voice</span>
+      <span class="ctx-mode">${brandSpecificCount} ${brandName.split(' ')[0]}-specific · ${universalCount} portfolio-wide</span>
+    </div>`;
+    chipsHtml += suggestions.map(s => {
+      const truncated = s.length > 70 ? s.slice(0, 67) + '...' : s;
+      return `<button type="button" class="suggestion-chip" data-suggest-field="${field}" data-suggest-value="${escapeHtml(s)}" title="${escapeHtml(s)}">${escapeHtml(truncated)}</button>`;
+    }).join('');
+    bank.innerHTML = chipsHtml;
+  });
+}
+
+function applySuggestion(field, value, chipEl) {
+  const listMap = {
+    pain: 'painList',
+    desire: 'desireList',
+    aspiration: 'aspirationList',
+    objection: 'objectionList',
+    banned: 'bannedList'
+  };
+  const listId = listMap[field];
+  if (!listId) return;
+  // Check if this suggestion is already added (avoid duplicates)
+  const existing = getBrandValue(`list_${field}`, []);
+  if (existing.some(v => v === value)) {
+    // Already added — just visually indicate
+    if (chipEl) chipEl.classList.add('added');
+    return;
+  }
+  addRow(listId, field, '', value);
+  if (chipEl) chipEl.classList.add('added');
+}
+
+function refreshChipAddedStates() {
+  document.querySelectorAll('.suggestion-chip').forEach(chip => {
+    const field = chip.dataset.suggestField;
+    const value = chip.dataset.suggestValue;
+    const existing = getBrandValue(`list_${field}`, []);
+    if (existing.some(v => v === value)) {
+      chip.classList.add('added');
+    } else {
+      chip.classList.remove('added');
+    }
+  });
+}
+
+//=============================================================
+// FILE UPLOAD + DOCUMENT PARSING
+//=============================================================
+// Pipeline:
+// 1. User drops/selects file
+// 2. Convert to plain text using PDF.js / mammoth / FileReader
+// 3. Run keyword-section parser to extract structured data
+// 4. Populate matching form fields, mark each as "needs review"
+// 5. User clicks Approve/Edit on each parsed field
+
+// Set up PDF.js worker
+if (typeof pdfjsLib !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+const UPLOAD_MAX_BYTES = 10 * 1024 * 1024; // 10 MB
+
+function setupUploadWidget() {
+  const dropzone = document.getElementById('uploadDropzone');
+  const fileInput = document.getElementById('uploadFile');
+  if (!dropzone || !fileInput) return;
+
+  // Click to browse
+  dropzone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', e => {
+    if (e.target.files.length) handleUploadedFile(e.target.files[0]);
+  });
+
+  // Drag and drop
+  ['dragenter', 'dragover'].forEach(ev => {
+    dropzone.addEventListener(ev, e => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.add('dragging');
+    });
+  });
+  ['dragleave', 'drop'].forEach(ev => {
+    dropzone.addEventListener(ev, e => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.remove('dragging');
+    });
+  });
+  dropzone.addEventListener('drop', e => {
+    if (e.dataTransfer.files.length) handleUploadedFile(e.dataTransfer.files[0]);
+  });
+}
+
+function setUploadStatus(text, type = '') {
+  const el = document.getElementById('uploadStatus');
+  const txt = document.getElementById('uploadStatusText');
+  if (!el || !txt) return;
+  el.classList.add('active');
+  el.classList.remove('error', 'success');
+  if (type) el.classList.add(type);
+  txt.textContent = text;
+}
+
+function setUploadProgress(pct) {
+  const fill = document.getElementById('uploadProgress');
+  if (fill) fill.style.width = Math.round(pct) + '%';
+}
+
+async function handleUploadedFile(file) {
+  if (file.size > UPLOAD_MAX_BYTES) {
+    setUploadStatus(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max 10 MB.`, 'error');
+    return;
+  }
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  if (!['pdf', 'docx', 'md', 'txt'].includes(ext)) {
+    setUploadStatus(`Unsupported file type: .${ext}. Upload a PDF, DOCX, MD, or TXT file.`, 'error');
+    return;
+  }
+  setUploadStatus(`Reading ${file.name}...`);
+  setUploadProgress(10);
+  try {
+    let text = '';
+    if (ext === 'pdf') text = await extractPdfText(file);
+    else if (ext === 'docx') text = await extractDocxText(file);
+    else text = await file.text();
+    setUploadProgress(60);
+    setUploadStatus(`Parsing structure (${text.length.toLocaleString()} chars)...`);
+    const parsed = parseDocumentText(text);
+    setUploadProgress(85);
+    const result = applyParsedData(parsed);
+    setUploadProgress(100);
+    showUploadResults(result, file.name);
+    setUploadStatus(`Done. ${result.populated} fields populated, ${result.skipped} unchanged. Scroll down to review.`, 'success');
+  } catch (err) {
+    console.error(err);
+    setUploadStatus(`Error reading file: ${err.message}`, 'error');
+  }
+}
+
+async function extractPdfText(file) {
+  if (typeof pdfjsLib === 'undefined') throw new Error('PDF library not loaded');
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  let full = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    // Reconstruct text with newlines based on Y position
+    let lastY = null;
+    let line = '';
+    const lines = [];
+    for (const item of content.items) {
+      if (lastY !== null && Math.abs(item.transform[5] - lastY) > 2) {
+        if (line.trim()) lines.push(line);
+        line = '';
+      }
+      line += item.str + ' ';
+      lastY = item.transform[5];
+    }
+    if (line.trim()) lines.push(line);
+    full += lines.join('\n') + '\n\n';
+  }
+  return full;
+}
+
+async function extractDocxText(file) {
+  if (typeof mammoth === 'undefined') throw new Error('DOCX library not loaded');
+  const buf = await file.arrayBuffer();
+  const result = await mammoth.extractRawText({ arrayBuffer: buf });
+  return result.value;
+}
+
+//=============================================================
+// DOCUMENT PARSER
+//=============================================================
+// Extracts structured data from plain text using:
+// - Section headers (numbered or capitalized)
+// - Banned-word/phrase patterns
+// - Do/Don't tables
+// - Tone descriptors
+
+function parseDocumentText(text) {
+  const out = {};
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const lower = text.toLowerCase();
+
+  // ---- DOCUMENT MAINTENANCE ----
+  // Look for "Version X.Y" pattern
+  const versionMatch = text.match(/version\s+(\d+\.\d+)/i);
+  if (versionMatch) out.f_doc_version = versionMatch[1];
+
+  // Author
+  const authorMatch = text.match(/author\s+([^\n]+?)(?:\n|owner|date|status|$)/i);
+  if (authorMatch) out.f_doc_author = cleanField(authorMatch[1]);
+  // Owner
+  const ownerMatch = text.match(/owner\s+([^\n]+?)(?:\n|status|date|$)/i);
+  if (ownerMatch) out.f_doc_owner = cleanField(ownerMatch[1]);
+  // Status
+  const statusMatch = text.match(/status\s+(living document|published|draft|deprecated)/i);
+  if (statusMatch) out.f_doc_status = statusMatch[1];
+  // Date
+  const dateMatch = text.match(/date\s+([A-Z][a-z]+\s+\d{1,2},?\s+\d{4})/);
+  if (dateMatch) out.f_doc_date = dateMatch[1];
+
+  // ---- BRAND IDENTITY ----
+  // Founding year + context
+  const foundedMatch = text.match(/(?:founded|established)\s+in\s+(\d{4})[^\n.]*[.\n]/i);
+  if (foundedMatch) out.f_founding_year = foundedMatch[0].trim().replace(/\.$/, '');
+
+  // Tagline often near top — look for italicized or short evocative phrase
+  // (skip — too unreliable without explicit marker)
+
+  // ---- BANNED WORDS / PHRASES ----
+  // Look for "banned" section or table — pattern: word + reason
+  const bannedSection = extractSection(text, /(banned|never use|do not use|avoid|forbidden)\s+(words|phrases|language|terms)/i, /^\d+\.|^section\s+\d+|^[A-Z][A-Z\s]{6,}$/m);
+  if (bannedSection) {
+    const banned = parseBannedList(bannedSection);
+    if (banned.length) out.list_banned = banned;
+  }
+
+  // ---- VOICE FINGERPRINT ----
+  // Look for "core voice" section, then extract the descriptive sentence after the heading
+  const voiceMatch = text.match(/(?:the\s+)?core\s+voice[\s\S]{0,30}?\n([\s\S]{50,800}?)(?=\n\s*\d+\.\d+|\n\s*[A-Z][A-Z\s]{8,}\n|$)/i);
+  if (voiceMatch) {
+    const block = voiceMatch[1];
+    // Take first 2-4 sentences but skip pure metadata lines
+    const sentences = block.match(/[A-Z][^.!?]{20,300}[.!?]/g);
+    if (sentences && sentences.length) {
+      out.f_voice_three_sentences = sentences.slice(0, 4).join(' ').trim();
+    }
+  }
+
+  // "AYC IS / AYC IS NOT" or similar voice spectrum table
+  const isNotSection = extractSection(text, /is\s+not|never\s+sounds\s+like|negative\s+anchor/i, /^\d+\./m);
+  if (isNotSection) {
+    out.f_voice_negative_anchors = isNotSection.slice(0, 400).trim();
+  }
+
+  // ---- POV ----
+  // Look for "second person" / "first person" / "we" / institutional rules
+  const povHints = [];
+  if (/second person|"you"|"your"/i.test(text)) povHints.push('Second person ("you", "your") for reader-facing content.');
+  if (/first person plural|"we"|"our"/i.test(text)) povHints.push('First person plural ("we", "our") when speaking as the brand.');
+  if (/institutional\s+["\']?I["\']?|never\s+["\']?I["\']?|no\s+["\']?I["\']?\s+statements/i.test(text)) {
+    povHints.push('Never use institutional "I" — use "we" or the brand name.');
+  }
+  if (/active voice/i.test(text)) povHints.push('Active voice — subject acts.');
+  if (povHints.length) out.f_pov = povHints.join('\n');
+
+  // ---- BLOG TONE ----
+  out.f_tone_blog = extractSectionShort(text, /blog\s*[—-]\s*tone|tone.*blog|blog.*tone/i, 400);
+  out.f_tone_email = extractSectionShort(text, /email\s*[—-]\s*tone|email\s*tone|email\s+(direct|warm)/i, 400);
+  out.f_tone_instagram = extractSectionShort(text, /instagram\s*[—-]\s*tone|instagram\s+voice/i, 400);
+  out.f_tone_ad_copy = extractSectionShort(text, /paid\s+ad|ad\s+copy.*tone|core\s+principles\s+for.*ad/i, 400);
+  out.f_tone_website = extractSectionShort(text, /website\s+copy|program\s+page/i, 400);
+
+  // ---- CTA ----
+  // Strong CTA examples
+  const ctaSection = extractSection(text, /strong\s+cta|cta\s+examples|preferred\s+cta/i, /^\d+\.|^section\s+\d+/m);
+  if (ctaSection) {
+    out.f_cta_direct_link = ctaSection.slice(0, 800).trim();
+  }
+  // CTAs to avoid
+  const ctaAvoidMatch = text.match(/avoid:?\s*["\']?([^.\n]{10,200})["\']?/i);
+  if (ctaAvoidMatch) out.f_cta_avoid = cleanField(ctaAvoidMatch[1]);
+
+  // ---- REWRITES ----
+  // Look for "before/after" or "current/rewritten" pattern
+  const rewrites = parseRewrites(text);
+  if (rewrites) out.f_rewrites = rewrites;
+
+  // ---- BENCHMARK ----
+  const benchmarkMatch = text.match(/(primary blog benchmark|primary benchmark|benchmark)[^.]*\.\s*([^.]{30,400}\.)/i);
+  if (benchmarkMatch) {
+    out.f_benchmark_primary = benchmarkMatch[2].trim();
+  }
+
+  return out;
+}
+
+function cleanField(s) {
+  return s.replace(/^[\s:—–-]+/, '').replace(/[\s.;,]+$/, '').trim();
+}
+
+function extractSection(text, headerRegex, terminatorRegex) {
+  const idx = text.search(headerRegex);
+  if (idx < 0) return null;
+  const after = text.slice(idx);
+  // Find next section header
+  const lines = after.split('\n');
+  let captured = [];
+  let started = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (!started) {
+      if (headerRegex.test(line)) started = true;
+      continue;
+    }
+    if (terminatorRegex && terminatorRegex.test(line) && captured.length > 3) break;
+    captured.push(line);
+    if (captured.length > 60) break; // safety cap
+  }
+  return captured.join('\n').trim();
+}
+
+function extractSectionShort(text, headerRegex, maxChars = 300) {
+  const idx = text.search(headerRegex);
+  if (idx < 0) return null;
+  const slice = text.slice(idx, idx + maxChars + 200);
+  const sentences = slice.match(/[^.!?]+[.!?]/g);
+  if (!sentences) return null;
+  let result = '';
+  for (const s of sentences.slice(1)) { // skip the matched header
+    if ((result + s).length > maxChars) break;
+    result += s.trim() + ' ';
+  }
+  return result.trim() || null;
+}
+
+function parseBannedList(section) {
+  const banned = [];
+  const lines = section.split('\n').map(l => l.trim()).filter(Boolean);
+  const dashPattern = /\s+[—–\-−﹣]\s+/; // multiple dash unicode variants
+  const tabPattern = /\s{2,}|\t+/;
+  for (const line of lines) {
+    // Skip header-ish lines
+    if (/^banned\s+(why|reason)?$/i.test(line)) continue;
+    if (/^[A-Z\s]{3,}$/.test(line) && line.length < 30) continue;
+    if (line.length < 8) continue;
+    // Pattern 1: "word" / "word" — reason
+    let m = line.match(/^["'"'"]?(.{2,80}?)["'"'"]?\s*[—–\-−﹣]\s*(.{4,300})$/);
+    if (m && m[2].length > 3 && !m[1].toLowerCase().includes('banned')) {
+      banned.push(`${cleanField(m[1])} — ${cleanField(m[2])}`);
+      continue;
+    }
+    // Pattern 2: word followed by 2+ spaces (table column) then reason
+    if (tabPattern.test(line)) {
+      const parts = line.split(tabPattern);
+      if (parts.length >= 2 && parts[1].length > 3) {
+        const word = cleanField(parts[0].replace(/^["'"'"]/, '').replace(/["'"'"]$/, ''));
+        const reason = cleanField(parts.slice(1).join(' '));
+        if (word && reason && !word.toLowerCase().includes('banned')) {
+          banned.push(`${word} — ${reason}`);
+          continue;
+        }
+      }
+    }
+  }
+  return banned;
+}
+
+function parseRewrites(text) {
+  // Look for "Current / Rewritten" pattern or "Before / After" pattern
+  const out = [];
+  const currentMatches = text.matchAll(/current[:\s—–-]+["\']?([^"'\n]{20,300})["\']?\s*\n[^\n]*\n[^\n]*(?:rewrite|after|ayc voice)[^\n]*[:\s—–-]+["\']?([^"'\n]{20,400})["\']?/gi);
+  for (const m of currentMatches) {
+    out.push(`BEFORE: ${m[1].trim()}\nPROBLEM: (parsed from source)\nAFTER: ${m[2].trim()}`);
+    if (out.length >= 5) break;
+  }
+  return out.length ? out.join('\n\n') : null;
+}
+
+//=============================================================
+// APPLY PARSED DATA + REVIEW BADGES
+//=============================================================
+function applyParsedData(parsed) {
+  let populated = 0;
+  let skipped = 0;
+  const reviewMap = getBrandReviewMap();
+
+  for (const [key, value] of Object.entries(parsed)) {
+    if (!value || (Array.isArray(value) && !value.length)) {
+      skipped++;
+      continue;
+    }
+    // If field already has user data, skip
+    const existing = getBrandValue(key, '');
+    if (existing && existing.toString().trim().length > 0 && !Array.isArray(existing)) {
+      skipped++;
+      continue;
+    }
+    if (Array.isArray(existing) && existing.length > 0) {
+      skipped++;
+      continue;
+    }
+    setBrandValue(key, value);
+    reviewMap[key] = 'needs_review';
+    populated++;
+  }
+
+  setBrandValue('_review_map', reviewMap);
+  saveState();
+  loadAllFieldValues();
+  applyReviewBadges();
+  updateProgress();
+  return { populated, skipped, total: Object.keys(parsed).length };
+}
+
+function getBrandReviewMap() {
+  const data = getBrandData();
+  return data._review_map || {};
+}
+
+function applyReviewBadges() {
+  // Remove existing badges
+  document.querySelectorAll('.review-badge, .review-actions').forEach(el => el.remove());
+  document.querySelectorAll('.field-review-wrap').forEach(el => {
+    el.classList.remove('field-review-wrap', 'needs-review', 'approved');
+  });
+
+  const reviewMap = getBrandReviewMap();
+  for (const [fieldId, status] of Object.entries(reviewMap)) {
+    if (fieldId.startsWith('_')) continue;
+    const input = document.getElementById(fieldId);
+    if (!input) continue;
+    const fieldDiv = input.closest('.field');
+    if (!fieldDiv) continue;
+    fieldDiv.classList.add('field-review-wrap');
+    fieldDiv.classList.add(status === 'approved' ? 'approved' : 'needs-review');
+
+    // Add badge to the label
+    const label = fieldDiv.querySelector('.field-label');
+    if (label && !label.querySelector('.review-badge')) {
+      const badge = document.createElement('span');
+      badge.className = 'review-badge' + (status === 'approved' ? ' approved' : '');
+      badge.textContent = status === 'approved' ? 'Approved' : 'Review';
+      label.appendChild(badge);
+    }
+
+    // Add Approve/Edit buttons under the input if not approved yet
+    if (status === 'needs_review' && !fieldDiv.querySelector('.review-actions')) {
+      const actions = document.createElement('div');
+      actions.className = 'review-actions';
+      actions.innerHTML = `
+        <button class="review-btn approve" data-review-approve="${fieldId}">Approve</button>
+        <button class="review-btn edit" data-review-edit="${fieldId}">Edit</button>
+      `;
+      fieldDiv.appendChild(actions);
+    }
+  }
+}
+
+function approveField(fieldId) {
+  const reviewMap = getBrandReviewMap();
+  reviewMap[fieldId] = 'approved';
+  setBrandValue('_review_map', reviewMap);
+  saveState();
+  applyReviewBadges();
+}
+
+function editField(fieldId) {
+  // Just remove the review status — user can now freely edit
+  const reviewMap = getBrandReviewMap();
+  delete reviewMap[fieldId];
+  setBrandValue('_review_map', reviewMap);
+  saveState();
+  applyReviewBadges();
+  // Focus the field
+  const input = document.getElementById(fieldId);
+  if (input) input.focus();
+}
+
+function showUploadResults(result, filename) {
+  const el = document.getElementById('uploadResults');
+  if (!el) return;
+  el.classList.add('active');
+  el.innerHTML = `
+    <h4>Parse summary — ${escapeHtml(filename)}</h4>
+    <ul>
+      <li><strong>${result.populated}</strong> fields populated and marked for review</li>
+      <li><strong>${result.skipped}</strong> fields skipped (already filled, or not found in document)</li>
+    </ul>
+    <p style="margin: 8px 0 0 0; color: rgba(255,255,255,0.85); font-size: 12px;">
+      Look for the orange <strong style="color: #ff8a00">Review</strong> badge next to each populated field. Click <strong>Approve</strong> if the parsed value is correct, or <strong>Edit</strong> to revise it. Anything not parsed stays empty for you to fill in directly.
+    </p>
+  `;
+}
+
+//=============================================================
+// DRIVE FOLDER URL HANDLING
+//=============================================================
+function updateDriveFolderButton() {
+  const input = document.getElementById('ctx_drive_folder');
+  const link = document.getElementById('ctx_drive_open');
+  if (!input || !link) return;
+  const url = input.value.trim();
+  if (url && /^https?:\/\//i.test(url)) {
+    link.href = url;
+    link.classList.remove('disabled');
+  } else {
+    link.href = '#';
+    link.classList.add('disabled');
+  }
+}
+
+function updateCopyTypeDriveButtons() {
+  COPY_TYPES.forEach(ct => {
+    const input = document.querySelector(`input[data-copytype="${ct.id}"][data-example="drive_url"]`);
+    const link = document.querySelector(`a[data-drive-open="${ct.id}"]`);
+    if (!input || !link) return;
+    const url = input.value.trim();
+    if (url && /^https?:\/\//i.test(url)) {
+      link.href = url;
+      link.classList.remove('disabled');
+    } else {
+      link.href = '#';
+      link.classList.add('disabled');
+    }
+  });
+}
+
+//=============================================================
+// VISUAL ANALYSIS PROMPT GENERATOR
+//=============================================================
+function buildAnalysisPrompt(copyTypeId) {
+  const ct = COPY_TYPES.find(c => c.id === copyTypeId);
+  if (!ct) return '';
+  const v = (k) => (getBrandValue(k, '') || '').toString().trim();
+  const driveUrl = v(`example_${copyTypeId}_drive_url`) || '_(specialist did not provide a folder URL)_';
+  const designNotes = v(`example_${copyTypeId}_design_notes`) || '_(no specific notes provided)_';
+  const ex1 = v(`example_${copyTypeId}_1`);
+  const ex2 = v(`example_${copyTypeId}_2`);
+  const exDo = v(`example_${copyTypeId}_do`);
+  const exDont = v(`example_${copyTypeId}_dont`);
+  const voice = v('f_voice_three_sentences') || '_(voice fingerprint not yet filled in)_';
+  const negativeAnchors = v('f_voice_negative_anchors') || '_(not provided)_';
+  const positioning = v('f_positioning') || '_(not provided)_';
+  const brandName = BRANDS[currentBrand] || currentBrand;
+
+  return `# Visual design analysis request
+
+I'm building the brand chapter for **${brandName}** in the TAI Portfolio Brand Doc. I need you to analyze a set of visual examples for the **${ct.name}** copy type and produce design guidelines that match this brand's voice.
+
+## Step 1 — Open the Drive folder and review the visuals
+
+**Drive folder URL:** ${driveUrl}
+
+Open the folder. The files inside are screenshots or exports of published ${ct.name} pieces from this brand. Review every file before answering.
+
+## Step 2 — Brand voice context (don't violate this in your design guidance)
+
+**Brand:** ${brandName}
+**Positioning:** ${positioning}
+
+**Voice fingerprint:**
+${voice}
+
+**This brand should never sound (or look) like:**
+${negativeAnchors}
+
+${exDo ? `**On-brand copy example for this copy type:**\n${exDo}\n` : ''}
+${exDont ? `**Off-brand copy example for this copy type:**\n${exDont}\n` : ''}
+
+## Step 3 — Specialist's notes for the analysis
+
+${designNotes}
+
+## Step 4 — What I need from you
+
+Produce a **Visual Design Guidelines** block for ${ct.name} for ${brandName}. Cover, in order:
+
+1. **Layout patterns** — what structural choices are consistent across the examples? (grid, alignment, white space, image-to-text ratio, slide composition for carousels)
+2. **Typography** — what type choices show up consistently? (headline typeface, body typeface, weight pairings, hierarchy, alignment)
+3. **Color use** — which brand colors lead, which support, which never appear in this copy type. Flag any color combinations to avoid.
+4. **Imagery** — what kind of imagery is used? (photographic vs. illustrated, color treatment, subject matter, framing, what's avoided)
+5. **Text-on-image patterns** — if applicable, where does text sit on images? What contrast treatments?
+6. **Branding elements** — logo placement, watermark/footer treatment, any consistent badge or signature element
+7. **What this copy type's visuals should never do** — specific anti-patterns observed or that would break the voice
+
+For each section, be specific. Reference the actual examples by filename or position when relevant. Don't generalize — describe what you see.
+
+## Step 5 — Format
+
+Return the guidelines in clean markdown, ready to paste back into the form. Keep total length under 600 words. The specialist will review, edit if needed, and approve before it goes into the master Brand Doc.
+
+If the Drive folder is empty, returns an error, or you can't access it, say so and stop. Do not invent guidelines from the voice description alone — that would defeat the point of the visual analysis.`;
+}
+
+function openAnalysisPromptModal(copyTypeId) {
+  const ct = COPY_TYPES.find(c => c.id === copyTypeId);
+  if (!ct) return;
+  const prompt = buildAnalysisPrompt(copyTypeId);
+  const driveUrl = (getBrandValue(`example_${copyTypeId}_drive_url`, '') || '').trim();
+
+  document.getElementById('modalTitle').textContent = `Analysis prompt — ${ct.name}`;
+  document.getElementById('modal').querySelector('.modal').classList.add('prompt-modal-content');
+
+  const driveWarning = !driveUrl
+    ? `<div class="prompt-instructions" style="background: var(--warning-bg); border-left-color: var(--warning-border);">
+        <strong>No Drive folder URL set yet.</strong> The prompt references the folder URL — paste in the URL field above first, then regenerate.
+      </div>`
+    : '';
+
+  document.getElementById('modalBody').innerHTML = `
+    ${driveWarning}
+    <div class="prompt-instructions">
+      <strong>How to use this:</strong> Click "Copy prompt," then start a new chat with Claude (or paste into your existing chat). Claude opens the Drive folder, reviews the examples, and returns visual design guidelines. Review Claude's output, edit it if needed, then paste the approved version into the "Analyzed visual guidelines" field below this button.
+    </div>
+    <textarea class="prompt-textarea" id="promptTextarea" readonly>${escapeHtml(prompt)}</textarea>
+  `;
+
+  const actionsEl = document.getElementById('modalActions');
+  actionsEl.innerHTML = '';
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'btn btn-secondary';
+  closeBtn.textContent = 'Close';
+  closeBtn.onclick = closeModal;
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'btn btn-primary';
+  copyBtn.textContent = 'Copy prompt';
+  copyBtn.onclick = () => {
+    const ta = document.getElementById('promptTextarea');
+    if (!ta) return;
+    ta.select();
+    try {
+      document.execCommand('copy');
+      copyBtn.textContent = '✓ Copied';
+      setTimeout(() => { copyBtn.textContent = 'Copy prompt'; }, 1500);
+    } catch (e) {
+      copyBtn.textContent = 'Copy failed';
+    }
+  };
+  actionsEl.appendChild(closeBtn);
+  actionsEl.appendChild(copyBtn);
+
+  document.getElementById('modal').classList.add('active');
+}
+
+//=============================================================
+// INIT
+//=============================================================
+function init() {
+  renderToneSliders();
+  renderCopyTypes();
+  renderSuggestionBanks();
+  setupUploadWidget();
+
+  // Wire all f_* and ctx_* inputs to track changes
+  document.querySelectorAll('input[id^="f_"], textarea[id^="f_"], input[id^="ctx_"], textarea[id^="ctx_"]').forEach(el => {
+    el.addEventListener('input', () => {
+      setBrandValue(el.id, el.value);
+      // If user manually edits a field that was awaiting review, clear the review state
+      const reviewMap = getBrandReviewMap();
+      if (reviewMap[el.id] === 'needs_review') {
+        reviewMap[el.id] = 'approved'; // user edit = implicit approval after revision
+        setBrandValue('_review_map', reviewMap);
+        applyReviewBadges();
+      }
+      // Live update Drive folder button
+      if (el.id === 'ctx_drive_folder') updateDriveFolderButton();
+    });
+  });
+
+  // Wire copy type textareas
+  document.querySelectorAll('textarea[data-copytype], input[data-copytype]').forEach(ta => {
+    ta.addEventListener('input', () => {
+      setBrandValue(`example_${ta.dataset.copytype}_${ta.dataset.example}`, ta.value);
+      // Live update per-copy-type drive Open button
+      if (ta.dataset.example === 'drive_url') updateCopyTypeDriveButtons();
+    });
+  });
+
+  // DELEGATED CLICK HANDLER — handles all dynamic buttons
+  document.body.addEventListener('click', e => {
+    // Add row button
+    const addBtn = e.target.closest('[data-add]');
+    if (addBtn) { addRow(addBtn.dataset.add, addBtn.dataset.prefix, ''); return; }
+    // Add pair button
+    const addPairBtn = e.target.closest('[data-add-pair]');
+    if (addPairBtn) { addPair(addPairBtn.dataset.addPair, addPairBtn.dataset.prefix); return; }
+    // Remove row button
+    const removeBtn = e.target.closest('[data-remove-row]');
+    if (removeBtn) { removeRow(removeBtn, removeBtn.dataset.removeRow, removeBtn.dataset.prefix); return; }
+    // Remove pair row button
+    const removePairBtn = e.target.closest('[data-remove-pair]');
+    if (removePairBtn) { removePairRow(removePairBtn, removePairBtn.dataset.removePair, removePairBtn.dataset.prefix); return; }
+    // Suggestion chip
+    const chip = e.target.closest('.suggestion-chip');
+    if (chip) { applySuggestion(chip.dataset.suggestField, chip.dataset.suggestValue, chip); return; }
+    // Review approve
+    const approveBtn = e.target.closest('[data-review-approve]');
+    if (approveBtn) { approveField(approveBtn.dataset.reviewApprove); return; }
+    // Review edit
+    const editBtn = e.target.closest('[data-review-edit]');
+    if (editBtn) { editField(editBtn.dataset.reviewEdit); return; }
+    // Generate analysis prompt button
+    const analyzeBtn = e.target.closest('[data-analyze]');
+    if (analyzeBtn) {
+      e.preventDefault();
+      openAnalysisPromptModal(analyzeBtn.dataset.analyze);
+      return;
+    }
+  });
+
+  // Initial load
+  applyPlaceholders();
+  loadBaselineChecklists();
+  loadAllFieldValues();
+  refreshChipAddedStates();
+  applyReviewBadges();
+  updateDriveFolderButton();
+  updateProgress();
+
+  // Warn before leaving with unsaved changes
+  window.addEventListener('beforeunload', () => {
+    if (saveTimer) {
+      saveAllFieldValues();
+      saveState();
+    }
+  });
+}
+
+init();
+</script>
+</body>
+</html>
